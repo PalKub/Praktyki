@@ -6,6 +6,8 @@
 #include "WheeledVehiclePawn.h"
 #include "PlayerVehiclePawn.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
 /**
  * 
  */
@@ -17,6 +19,8 @@ class PRAKTYKI_API APlayerVehiclePawn : public AWheeledVehiclePawn
 public:
 	APlayerVehiclePawn();
 
+	void SetCameraRotation(const FVector2D NewRotation);
+	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> InteriorMeshComponent;
@@ -104,4 +108,19 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> BackRightRotorMeshComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UStaticMeshComponent> LeftMirrorMeshComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UStaticMeshComponent> RightMirrorMeshComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UStaticMeshComponent> SteeringWheelMeshComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UCameraComponent> Camera;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<USpringArmComponent> SpringArm;
 };

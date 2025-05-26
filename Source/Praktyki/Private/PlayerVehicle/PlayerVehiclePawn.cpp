@@ -3,6 +3,9 @@
 
 #include "PlayerVehicle/PlayerVehiclePawn.h"
 
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+
 APlayerVehiclePawn::APlayerVehiclePawn()
 {
 	InteriorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Interior");
@@ -91,4 +94,24 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 
 	BackRightRotorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Back_Right_Rotor");
 	BackRightRotorMeshComponent->SetupAttachment(GetMesh(), "BackRightWheelSocket");
+
+	LeftMirrorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Mirror_Left");
+	LeftMirrorMeshComponent->SetupAttachment(GetMesh(), "MirrorLeftSocket");
+
+	RightMirrorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Mirror_Right");
+	RightMirrorMeshComponent->SetupAttachment(GetMesh(), "MirrorRightSocket");
+
+	SteeringWheelMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("SteeringWheel");
+	SteeringWheelMeshComponent->SetupAttachment(GetMesh(), "SteeringWheelSocket");
+
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
+	SpringArm->SetupAttachment(GetRootComponent());
+
+	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
+	Camera->SetupAttachment(SpringArm);
+}
+
+void APlayerVehiclePawn::SetCameraRotation(const FVector2D NewRotation)
+{
+	SpringArm->AddRelativeRotation(FRotator(NewRotation.Y, NewRotation.X, 0.f));
 }
