@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "PraktykiPlayerVehicleController.generated.h"
 
+class APlayerVehiclePawn;
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
@@ -18,6 +19,9 @@ class PRAKTYKI_API APraktykiPlayerVehicleController : public APlayerController
 	GENERATED_BODY()
 
 protected:
+	UFUNCTION(BlueprintCallable)
+	void StartRacingMode();
+	
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 
@@ -36,6 +40,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> TurnAction;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<APlayerVehiclePawn> PlayerVehicleClass;
 
 	void Accelerate(const FInputActionValue& InputActionValue);
 	void Brake(const FInputActionValue& InputActionValue);

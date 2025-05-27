@@ -6,7 +6,23 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/PlayerStart.h"
+#include "Kismet/GameplayStatics.h"
 #include "PlayerVehicle/PlayerVehiclePawn.h"
+
+void APraktykiPlayerVehicleController::StartRacingMode()
+{
+	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
+	{
+		if (APawn* CurrentPawn = GetPawn())
+		{
+			UnPossess();
+			CurrentPawn->Destroy();
+		}
+		APawn* NewPawn = GetWorld()->SpawnActor<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
+		Possess(NewPawn);
+	}
+}
 
 void APraktykiPlayerVehicleController::BeginPlay()
 {
