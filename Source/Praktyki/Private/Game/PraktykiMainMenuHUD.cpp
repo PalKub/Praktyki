@@ -5,6 +5,14 @@
 
 #include "Blueprint/UserWidget.h"
 
+void APraktykiMainMenuHUD::OpenRacingHUDWidget()
+{
+	if (MainMenuWidget) MainMenuWidget->RemoveFromParent();
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), RacingHUDClass);
+		Widget->AddToViewport();
+		RacingHUDWidget = Widget;
+}
+
 void APraktykiMainMenuHUD::BeginPlay()
 {
 	Super::BeginPlay();
@@ -18,5 +26,6 @@ void APraktykiMainMenuHUD::BeginPlay()
 		InputMode.SetWidgetToFocus(Widget->TakeWidget());
 		GetOwningPlayerController()->SetInputMode(InputMode);
 		GetOwningPlayerController()->bShowMouseCursor = true;
+		MainMenuWidget = Widget;
 	}
 }

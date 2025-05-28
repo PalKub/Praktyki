@@ -8,6 +8,8 @@
 
 APlayerVehiclePawn::APlayerVehiclePawn()
 {
+	PrimaryActorTick.bCanEverTick = false;
+	
 	InteriorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Interior");
 	InteriorMeshComponent->SetupAttachment(GetMesh());
 
@@ -109,6 +111,8 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
+
+	Tags.Add("Player");
 }
 
 void APlayerVehiclePawn::SetCameraRotation(const FVector2D NewRotation)

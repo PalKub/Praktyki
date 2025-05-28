@@ -6,6 +6,7 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Game/PraktykiMainMenuHUD.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerVehicle/PlayerVehiclePawn.h"
@@ -21,6 +22,10 @@ void APraktykiPlayerVehicleController::StartRacingMode()
 		}
 		APawn* NewPawn = GetWorld()->SpawnActor<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
 		Possess(NewPawn);
+		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
+		{
+			HUD->OpenRacingHUDWidget();
+		}
 	}
 }
 
