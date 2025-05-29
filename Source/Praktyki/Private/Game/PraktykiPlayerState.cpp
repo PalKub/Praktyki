@@ -3,24 +3,114 @@
 
 #include "Game/PraktykiPlayerState.h"
 
+#include "Components/SplineComponent.h"
+#include "Curves/CurveVector.h"
+#include "Game/PraktykiGameInstance.h"
+
 void APraktykiPlayerState::StartFinishTriggered()
 {
-	if (bRaceTimeMeasuringActive)
+	if (!GameInstance) GameInstance = Cast<UPraktykiGameInstance>(GetGameInstance());
+
+	if (GameInstance)
 	{
-		GetWorldTimerManager().ClearTimer(RaceTimer);
-		LapTimeElapsed = GetWorld()->GetTimeSeconds() - GameTimeAtLapStart;
-		OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed);
+		if (bRaceTimeMeasuringActive && bSectorThreeTriggered && !bSectorTwoTriggered && !bStartFinishTriggered)
+		{
+			CurrentSectorThreeTime = LapTimeElapsed - CurrentSectorOneTime - CurrentSectorTwoTime;
+			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime);
+			OnLapTimeCompletedDelegate.Broadcast(LapTimeElapsed);
+			bRaceTimeMeasuringActive = false;
+			bSectorThreeTriggered = false;
+			bStartFinishTriggered = true;
+			StopRaceTimer();
+		}
+
+		if (!bRaceTimeMeasuringActive)
+		{
+			bRaceTimeMeasuringActive = true;
+			bStartFinishTriggered = true;
+			bSectorTwoTriggered = false;
+			bSectorThreeTriggered = false;
+			GameTimeAtLapStart = GetWorld()->GetTimeSeconds();
+			CurrentLapTimeAtDistance = NewObject<UCurveFloat>();
+			CurrentLapLocationAtLapTime = NewObject<UCurveVector>();
+			CurrentLapRotationAtLapTime = NewObject<UCurveVector>();
+			GetWorldTimerManager().SetTimer(RaceTimer, this, &APraktykiPlayerState::StartRaceTimer, RaceTimerTickFrequency, true);
+		}
 	}
-	else
+}
+
+void APraktykiPlayerState::SectorTwoTriggered()
+{
+	if (bStartFinishTriggered && !bSectorTwoTriggered && !bSectorThreeTriggered && bRaceTimeMeasuringActive)
 	{
-		bRaceTimeMeasuringActive = true;
-		GameTimeAtLapStart = GetWorld()->GetTimeSeconds();
-		GetWorldTimerManager().SetTimer(RaceTimer, this, &APraktykiPlayerState::StartRaceTimer, RaceTimerTickFrequency, true);
+		bStartFinishTriggered = false;
+		bSectorTwoTriggered = true;
+		CurrentSectorOneTime = LapTimeElapsed;
+		OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime);
+	}
+}
+
+void APraktykiPlayerState::SectorThreeTriggered()
+{
+	if (bSectorTwoTriggered && !bStartFinishTriggered && !bSectorThreeTriggered && bRaceTimeMeasuringActive)
+	{
+		bSectorTwoTriggered = false;
+		bSectorThreeTriggered = true;
+		CurrentSectorTwoTime = LapTimeElapsed - CurrentSectorOneTime;
+		OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime);
 	}
 }
 
 void APraktykiPlayerState::StartRaceTimer()
 {
+	PopulateLapInfoData();
+}
+
+void APraktykiPlayerState::StopRaceTimer()
+{
+	GetWorldTimerManager().ClearTimer(RaceTimer);
+	PopulateLapInfoData();
+
+	FLapInfo CurrentLapInfo;
+	CurrentLapInfo.LapTime = LapTimeElapsed;
+	CurrentLapInfo.SectorOneTime = CurrentSectorOneTime;
+	CurrentLapInfo.SectorTwoTime = CurrentSectorTwoTime;
+	CurrentLapInfo.SectorThreeTime = CurrentSectorThreeTime;
+	LapsInfoArray.Add(CurrentLapInfo);
+
+	if (BestSectorOneTime == 0.f || CurrentSectorOneTime < BestSectorOneTime) BestSectorOneTime = CurrentSectorOneTime;
+	if (BestSectorTwoTime == 0.f || CurrentSectorTwoTime < BestSectorTwoTime) BestSectorTwoTime = CurrentSectorTwoTime;
+	if (BestSectorThreeTime == 0.f || CurrentSectorThreeTime < BestSectorThreeTime) BestSectorThreeTime = CurrentSectorThreeTime;
+
+	if (BestLapTime == 0.f || LapTimeElapsed < BestLapTime)
+	{
+		BestLapTime = LapTimeElapsed;
+		BestLapTimeAtDistanceCurve = CurrentLapTimeAtDistance;
+		BestLapLocationAtLapTime = CurrentLapLocationAtLapTime;
+		BestLapRotationAtLapTime = CurrentLapRotationAtLapTime;
+	}
+	else
+	{
+		CurrentLapTimeAtDistance->BeginDestroy();
+		CurrentLapLocationAtLapTime->BeginDestroy();
+		CurrentLapRotationAtLapTime->BeginDestroy();
+	}
+}
+
+void APraktykiPlayerState::PopulateLapInfoData()
+{
 	LapTimeElapsed = GetWorld()->GetTimeSeconds() - GameTimeAtLapStart;
 	OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed);
+	const FVector& ClosestLocationOnTheTrackSpline = GameInstance->GetSpectatorCameraSpline()->FindLocationClosestToWorldLocation(GetPawn()->GetActorLocation(), ESplineCoordinateSpace::World);
+	const float DistanceAlongTrackSpline = GameInstance->GetSpectatorCameraSpline()->GetDistanceAlongSplineAtLocation(ClosestLocationOnTheTrackSpline, ESplineCoordinateSpace::World);
+
+	CurrentLapTimeAtDistance->FloatCurve.AddKey(LapTimeElapsed, DistanceAlongTrackSpline);
+
+	CurrentLapLocationAtLapTime->FloatCurves[0].AddKey(LapTimeElapsed, GetPawn()->GetActorLocation().X);
+	CurrentLapLocationAtLapTime->FloatCurves[1].AddKey(LapTimeElapsed, GetPawn()->GetActorLocation().Y);
+	CurrentLapLocationAtLapTime->FloatCurves[2].AddKey(LapTimeElapsed, GetPawn()->GetActorLocation().Z);
+
+	CurrentLapRotationAtLapTime->FloatCurves[0].AddKey(LapTimeElapsed, GetPawn()->GetActorRotation().Roll);
+	CurrentLapRotationAtLapTime->FloatCurves[1].AddKey(LapTimeElapsed, GetPawn()->GetActorRotation().Pitch);
+	CurrentLapRotationAtLapTime->FloatCurves[0].AddKey(LapTimeElapsed, GetPawn()->GetActorRotation().Yaw);
 }
