@@ -121,7 +121,7 @@ void APraktykiPlayerState::PopulateLapInfoData()
 	const FVector& ClosestLocationOnTheTrackSpline = GameInstance->GetSpectatorCameraSpline()->FindLocationClosestToWorldLocation(GetPawn()->GetActorLocation(), ESplineCoordinateSpace::World);
 	const float DistanceAlongTrackSpline = GameInstance->GetSpectatorCameraSpline()->GetDistanceAlongSplineAtLocation(ClosestLocationOnTheTrackSpline, ESplineCoordinateSpace::World);
 	
-	if (PreviousDistance < DistanceAlongTrackSpline || )
+	if (PreviousDistance < DistanceAlongTrackSpline)
 	{
 		CurrentDistanceAtLapTime->FloatCurve.AddKey(DistanceAlongTrackSpline, LapTimeElapsed);
 		PreviousDistance = DistanceAlongTrackSpline;
