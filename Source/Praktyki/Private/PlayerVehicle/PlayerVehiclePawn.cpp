@@ -3,12 +3,14 @@
 
 #include "PlayerVehicle/PlayerVehiclePawn.h"
 
+#include "ChaosVehicleMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 APlayerVehiclePawn::APlayerVehiclePawn()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickInterval = 0.1f;
 	
 	InteriorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Interior");
 	InteriorMeshComponent->SetupAttachment(GetMesh());
@@ -118,4 +120,13 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 void APlayerVehiclePawn::SetCameraRotation(const FVector2D NewRotation)
 {
 	SpringArm->AddRelativeRotation(FRotator(NewRotation.Y, NewRotation.X, 0.f));
+}
+
+void APlayerVehiclePawn::Tick(float DeltaSeconds)
+{
+	if (const int32 CurrentSpeed = FMath::TruncToInt32(GetVehicleMovementComponent()->GetForwardSpeed() * 0.036f); CurrentSpeed != VehicleSpeed)
+	{
+		VehicleSpeed = CurrentSpeed;
+		OnSpeedChangedDelegate.Broadcast(VehicleSpeed);
+	}
 }

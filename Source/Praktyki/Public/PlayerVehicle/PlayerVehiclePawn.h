@@ -8,6 +8,8 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpeedChangedSignature, int32, Speed);
 /**
  * 
  */
@@ -19,7 +21,13 @@ class PRAKTYKI_API APlayerVehiclePawn : public AWheeledVehiclePawn
 public:
 	APlayerVehiclePawn();
 
+	UPROPERTY(BlueprintAssignable)
+	FOnSpeedChangedSignature OnSpeedChangedDelegate;
+
 	void SetCameraRotation(const FVector2D NewRotation);
+
+protected:
+	virtual void Tick(float DeltaSeconds) override;
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -123,4 +131,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USpringArmComponent> SpringArm;
+
+	int32 VehicleSpeed = 0;
 };
