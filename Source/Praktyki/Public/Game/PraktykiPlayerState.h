@@ -38,7 +38,7 @@ struct FLapInfo
 	float SectorThreeTime = 0.f;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLapTimeChangeSignature, float, LapTimeElapsed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLapTimeChangeSignature, float, LapTimeElapsed, float, Delta);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSectorCompletedSignature, ESectorNumber, SectorNumber, float, SectorTime, bool, bIsPurple);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLapCompletedSignature, FLapInfo, LapInfo, bool, bIsBestLap);
 
@@ -66,16 +66,16 @@ private:
 	float RaceTimerTickFrequency = 0.1f;
 
 	UPROPERTY()
-	TObjectPtr<UCurveFloat> CurrentLapTimeAtDistance = nullptr;
+	TObjectPtr<UCurveFloat> CurrentDistanceAtLapTime = nullptr;
 
 	UPROPERTY()
 	TObjectPtr<UCurveVector> CurrentLapLocationAtLapTime = nullptr;
 
 	UPROPERTY()
 	TObjectPtr<UCurveVector> CurrentLapRotationAtLapTime = nullptr;
-	
+
 	UPROPERTY()
-	TObjectPtr<UCurveFloat> BestLapTimeAtDistanceCurve = nullptr;
+	TObjectPtr<UCurveFloat> BestDistanceAtLapTime = nullptr;
 
 	UPROPERTY()
 	TObjectPtr<UCurveVector> BestLapLocationAtLapTime = nullptr;
@@ -98,6 +98,7 @@ private:
 	float BestSectorOneTime = 0.f;
 	float BestSectorTwoTime = 0.f;
 	float BestSectorThreeTime = 0.f;
+	float PreviousDistance = 0.f;
 	bool bRaceTimeMeasuringActive = false;
 	bool bStartFinishTriggered = false;
 	bool bSectorTwoTriggered = false;
