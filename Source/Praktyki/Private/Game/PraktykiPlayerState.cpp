@@ -15,9 +15,6 @@ void APraktykiPlayerState::StartFinishTriggered()
 	{
 		if (bRaceTimeMeasuringActive && bSectorThreeTriggered && !bSectorTwoTriggered && !bStartFinishTriggered)
 		{
-			CurrentSectorThreeTime = LapTimeElapsed - CurrentSectorOneTime - CurrentSectorTwoTime;
-			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime);
-			OnLapTimeCompletedDelegate.Broadcast(LapTimeElapsed);
 			bRaceTimeMeasuringActive = false;
 			bSectorThreeTriggered = false;
 			bStartFinishTriggered = true;
@@ -31,9 +28,16 @@ void APraktykiPlayerState::StartFinishTriggered()
 			bSectorTwoTriggered = false;
 			bSectorThreeTriggered = false;
 			GameTimeAtLapStart = GetWorld()->GetTimeSeconds();
-			CurrentLapTimeAtDistance = NewObject<UCurveFloat>();
-			CurrentLapLocationAtLapTime = NewObject<UCurveVector>();
-			CurrentLapRotationAtLapTime = NewObject<UCurveVector>();
+
+			if (!CurrentLapTimeAtDistance || BestLapTimeAtDistanceCurve == CurrentLapTimeAtDistance) CurrentLapTimeAtDistance = NewObject<UCurveFloat>();
+			else CurrentLapTimeAtDistance->ResetCurve();
+
+			if (!CurrentLapLocationAtLapTime || BestLapLocationAtLapTime == CurrentLapLocationAtLapTime) CurrentLapLocationAtLapTime = NewObject<UCurveVector>();
+			else CurrentLapLocationAtLapTime->ResetCurve();
+			
+			if (!CurrentLapRotationAtLapTime || BestLapRotationAtLapTime == CurrentLapRotationAtLapTime) CurrentLapRotationAtLapTime = NewObject<UCurveVector>();
+			else (CurrentLapRotationAtLapTime->ResetCurve());
+			
 			GetWorldTimerManager().SetTimer(RaceTimer, this, &APraktykiPlayerState::StartRaceTimer, RaceTimerTickFrequency, true);
 		}
 	}
@@ -46,7 +50,12 @@ void APraktykiPlayerState::SectorTwoTriggered()
 		bStartFinishTriggered = false;
 		bSectorTwoTriggered = true;
 		CurrentSectorOneTime = LapTimeElapsed;
-		OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime);
+		if (BestSectorOneTime == 0.f || CurrentSectorOneTime < BestSectorOneTime)
+		{
+			BestSectorOneTime = CurrentSectorOneTime;
+			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime, true);
+		}
+		else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime, false);
 	}
 }
 
@@ -57,7 +66,12 @@ void APraktykiPlayerState::SectorThreeTriggered()
 		bSectorTwoTriggered = false;
 		bSectorThreeTriggered = true;
 		CurrentSectorTwoTime = LapTimeElapsed - CurrentSectorOneTime;
-		OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime);
+		if (BestSectorTwoTime == 0.f || CurrentSectorTwoTime < BestSectorTwoTime)
+		{
+			BestSectorTwoTime = CurrentSectorTwoTime;
+			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime, true);
+		}
+		else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime, false);
 	}
 }
 
@@ -70,6 +84,7 @@ void APraktykiPlayerState::StopRaceTimer()
 {
 	GetWorldTimerManager().ClearTimer(RaceTimer);
 	PopulateLapInfoData();
+	CurrentSectorThreeTime = LapTimeElapsed - CurrentSectorOneTime - CurrentSectorTwoTime;
 
 	FLapInfo CurrentLapInfo;
 	CurrentLapInfo.LapTime = LapTimeElapsed;
@@ -78,23 +93,24 @@ void APraktykiPlayerState::StopRaceTimer()
 	CurrentLapInfo.SectorThreeTime = CurrentSectorThreeTime;
 	LapsInfoArray.Add(CurrentLapInfo);
 
-	if (BestSectorOneTime == 0.f || CurrentSectorOneTime < BestSectorOneTime) BestSectorOneTime = CurrentSectorOneTime;
-	if (BestSectorTwoTime == 0.f || CurrentSectorTwoTime < BestSectorTwoTime) BestSectorTwoTime = CurrentSectorTwoTime;
-	if (BestSectorThreeTime == 0.f || CurrentSectorThreeTime < BestSectorThreeTime) BestSectorThreeTime = CurrentSectorThreeTime;
-
+	bool bIsBestLap = false;
 	if (BestLapTime == 0.f || LapTimeElapsed < BestLapTime)
 	{
+		bIsBestLap = true;
 		BestLapTime = LapTimeElapsed;
 		BestLapTimeAtDistanceCurve = CurrentLapTimeAtDistance;
 		BestLapLocationAtLapTime = CurrentLapLocationAtLapTime;
 		BestLapRotationAtLapTime = CurrentLapRotationAtLapTime;
 	}
-	else
+	
+	if (BestSectorThreeTime == 0.f || CurrentSectorThreeTime < BestSectorThreeTime)
 	{
-		CurrentLapTimeAtDistance->BeginDestroy();
-		CurrentLapLocationAtLapTime->BeginDestroy();
-		CurrentLapRotationAtLapTime->BeginDestroy();
+		BestSectorThreeTime = CurrentSectorThreeTime;
+		OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime, true);
 	}
+	else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime, false);
+
+	OnLapTimeCompletedDelegate.Broadcast(CurrentLapInfo, bIsBestLap);
 }
 
 void APraktykiPlayerState::PopulateLapInfoData()

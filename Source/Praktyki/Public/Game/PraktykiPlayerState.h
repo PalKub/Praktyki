@@ -20,27 +20,27 @@ enum class ESectorNumber : uint8
 	ESN_Three UMETA(DisplayName = "SectorThree")
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FLapInfo
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	float LapTime = 0.f;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	float SectorOneTime = 0.f;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	float SectorTwoTime = 0.f;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	float SectorThreeTime = 0.f;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLapTimeChangeSignature, float, LapTimeElapsed);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSectorCompletedSignature, ESectorNumber, SectorNumber, float, SectorTime);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLapCompletedSignature, float, LapTime);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSectorCompletedSignature, ESectorNumber, SectorNumber, float, SectorTime, bool, bIsPurple);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLapCompletedSignature, FLapInfo, LapInfo, bool, bIsBestLap);
 
 UCLASS()
 class PRAKTYKI_API APraktykiPlayerState : public APlayerState
