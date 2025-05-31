@@ -35,8 +35,6 @@ public:
 
 	void SetCameraRotation(const FVector2D NewRotation);
 	void SetLivery(const ELiveryColor LiveryColor);
-	void SetTimeLimit(const int32 NewTimeLimit) { TimeLimit = NewTimeLimit; }
-	void SetShouldShowGhost(bool bShouldShowGhost) { bShowGhost = bShouldShowGhost; }
 
 protected:
 	virtual void PossessedBy(AController* NewController) override;
@@ -160,8 +158,6 @@ private:
 	int32 VehicleSpeed = 0;
 	FTimerHandle UpdateSpeedTimer;
 	TArray<TObjectPtr<UStaticMeshComponent>> LiveryMeshes;
-	int32 TimeLimit = 10.f;
-	bool bShowGhost = true;
 
 	void UpdateSpeed();
 	void SetLiveryColor(const FLinearColor Color);

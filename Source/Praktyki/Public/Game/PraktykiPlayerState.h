@@ -60,6 +60,8 @@ public:
 	void StartFinishTriggered();
 	void SectorTwoTriggered();
 	void SectorThreeTriggered();
+	void SetTimeLimit(const int32 NewTimeLimit) { TimeLimit = NewTimeLimit; }
+	void SetShouldShowGhost(bool bShouldShowGhost) { bShowGhost = bShouldShowGhost; }
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -103,6 +105,8 @@ private:
 	bool bStartFinishTriggered = false;
 	bool bSectorTwoTriggered = false;
 	bool bSectorThreeTriggered = false;
+	int32 TimeLimit = 10.f;
+	bool bShowGhost = true;
 	
 	void StartRaceTimer();
 	void StopRaceTimer();

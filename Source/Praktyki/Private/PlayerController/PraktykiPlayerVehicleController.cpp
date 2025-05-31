@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Game/PraktykiMainMenuHUD.h"
+#include "Game/PraktykiPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerVehicle/PlayerVehiclePawn.h"
@@ -40,9 +41,14 @@ void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShow
 		}
 		APlayerVehiclePawn* NewPawn = GetWorld()->SpawnActorDeferred<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
 		NewPawn->SetLivery(LiveryColor);
-		NewPawn->SetTimeLimit(TimeLimit);
-		NewPawn->SetShouldShowGhost(bShowGhost);
 		NewPawn->FinishSpawning(PlayerStart->GetActorTransform());
+
+		if (APraktykiPlayerState* PraktykiPlayerState = Cast<APraktykiPlayerState>(PlayerState))
+		{
+			PraktykiPlayerState->SetTimeLimit(TimeLimit);
+			PraktykiPlayerState->SetShouldShowGhost(bShowGhost);
+		}
+
 		Possess(NewPawn);
 		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
 		{
