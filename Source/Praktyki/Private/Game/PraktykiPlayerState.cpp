@@ -3,9 +3,10 @@
 
 #include "Game/PraktykiPlayerState.h"
 
+#include "Actors/GhostActor.h"
 #include "Components/SplineComponent.h"
-#include "Curves/CurveVector.h"
 #include "Game/PraktykiGameInstance.h"
+#include "PlayerController/PraktykiPlayerVehicleController.h"
 
 void APraktykiPlayerState::StartFinishTriggered()
 {
@@ -18,6 +19,7 @@ void APraktykiPlayerState::StartFinishTriggered()
 			bRaceTimeMeasuringActive = false;
 			bSectorThreeTriggered = false;
 			bStartFinishTriggered = true;
+			if (GhostPawn) GhostPawn->Destroy();
 			StopRaceTimer();
 		}
 
@@ -32,14 +34,15 @@ void APraktykiPlayerState::StartFinishTriggered()
 			if (!CurrentDistanceAtLapTime || BestDistanceAtLapTime == CurrentDistanceAtLapTime) CurrentDistanceAtLapTime = NewObject<UCurveFloat>();
 			else CurrentDistanceAtLapTime->ResetCurve();
 
-			if (!CurrentLapLocationAtLapTime || BestLapLocationAtLapTime == CurrentLapLocationAtLapTime) CurrentLapLocationAtLapTime = NewObject<UCurveVector>();
-			else CurrentLapLocationAtLapTime->ResetCurve();
-			
-			if (!CurrentLapRotationAtLapTime || BestLapRotationAtLapTime == CurrentLapRotationAtLapTime) CurrentLapRotationAtLapTime = NewObject<UCurveVector>();
-			else (CurrentLapRotationAtLapTime->ResetCurve());
+			CurrentLapTransformAtLapTime.CopyCurve(EmptyCurve);
 
 			PreviousDistance = 0.f;
 			GetWorldTimerManager().SetTimer(RaceTimer, this, &APraktykiPlayerState::StartRaceTimer, RaceTimerTickFrequency, true);
+
+			if (BestLapTime != 0 && bShowGhost)
+			{
+				ShowGhost();
+			}
 		}
 	}
 }
@@ -101,8 +104,7 @@ void APraktykiPlayerState::StopRaceTimer()
 		bIsBestLap = true;
 		BestLapTime = LapTimeElapsed;
 		BestDistanceAtLapTime = CurrentDistanceAtLapTime;
-		BestLapLocationAtLapTime = CurrentLapLocationAtLapTime;
-		BestLapRotationAtLapTime = CurrentLapRotationAtLapTime;
+		BestLapTransformAtLapTime.CopyCurve(CurrentLapTransformAtLapTime);
 	}
 	
 	if (BestSectorThreeTime == 0.f || CurrentSectorThreeTime < BestSectorThreeTime)
@@ -126,14 +128,8 @@ void APraktykiPlayerState::PopulateLapInfoData()
 		CurrentDistanceAtLapTime->FloatCurve.AddKey(DistanceAlongTrackSpline, LapTimeElapsed);
 		PreviousDistance = DistanceAlongTrackSpline;
 	}
-
-	CurrentLapLocationAtLapTime->FloatCurves[0].AddKey(LapTimeElapsed, GetPawn()->GetActorLocation().X);
-	CurrentLapLocationAtLapTime->FloatCurves[1].AddKey(LapTimeElapsed, GetPawn()->GetActorLocation().Y);
-	CurrentLapLocationAtLapTime->FloatCurves[2].AddKey(LapTimeElapsed, GetPawn()->GetActorLocation().Z);
-
-	CurrentLapRotationAtLapTime->FloatCurves[0].AddKey(LapTimeElapsed, GetPawn()->GetActorRotation().Roll);
-	CurrentLapRotationAtLapTime->FloatCurves[1].AddKey(LapTimeElapsed, GetPawn()->GetActorRotation().Pitch);
-	CurrentLapRotationAtLapTime->FloatCurves[0].AddKey(LapTimeElapsed, GetPawn()->GetActorRotation().Yaw);
+	
+	CurrentLapTransformAtLapTime.UpdateOrAddKey(GetPawn()->GetActorTransform(), LapTimeElapsed);
 
 	if (BestLapTime > 0.f)
 	{
@@ -141,4 +137,26 @@ void APraktykiPlayerState::PopulateLapInfoData()
 		OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, Delta);
 	}
 	else OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, 0.f);
+
+	if (GhostPawn) UpdateGhostLocation();
+}
+
+void APraktykiPlayerState::ShowGhost()
+{
+
+	FTransform StartTransform = BestLapTransformAtLapTime.Evaluate(LapTimeElapsed, 0.f);
+	
+	if (const APraktykiPlayerVehicleController* PlayerController = Cast<APraktykiPlayerVehicleController>(GetPlayerController()))
+	{
+		GhostPawn = PlayerController->SpawnGhost(StartTransform.GetLocation(), StartTransform.Rotator());
+	}
+}
+
+void APraktykiPlayerState::UpdateGhostLocation()
+{
+	GhostPawn->SetActorTransform(BestLapTransformAtLapTime.Evaluate(LapTimeElapsed, 1.f));
+	if (LapTimeElapsed >= BestLapTime)
+	{
+		GhostPawn->Destroy();
+	}
 }

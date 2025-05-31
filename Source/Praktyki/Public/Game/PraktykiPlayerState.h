@@ -6,6 +6,8 @@
 #include "GameFramework/PlayerState.h"
 #include "PraktykiPlayerState.generated.h"
 
+class AGhostActor;
+class APlayerVehiclePawn;
 class UCurveVector;
 class UPraktykiGameInstance;
 
@@ -62,7 +64,7 @@ public:
 	void SectorThreeTriggered();
 	void SetTimeLimit(const int32 NewTimeLimit) { TimeLimit = NewTimeLimit; }
 	void SetShouldShowGhost(bool bShouldShowGhost) { bShowGhost = bShouldShowGhost; }
-	
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	float RaceTimerTickFrequency = 0.1f;
@@ -71,25 +73,16 @@ private:
 	TObjectPtr<UCurveFloat> CurrentDistanceAtLapTime = nullptr;
 
 	UPROPERTY()
-	TObjectPtr<UCurveVector> CurrentLapLocationAtLapTime = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<UCurveVector> CurrentLapRotationAtLapTime = nullptr;
-
-	UPROPERTY()
 	TObjectPtr<UCurveFloat> BestDistanceAtLapTime = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<UCurveVector> BestLapLocationAtLapTime = nullptr;
-
-	UPROPERTY()
-	TObjectPtr<UCurveVector> BestLapRotationAtLapTime = nullptr;
 
 	UPROPERTY()
 	TArray<FLapInfo> LapsInfoArray = TArray<FLapInfo>();
 
+	FTransformCurve CurrentLapTransformAtLapTime;
+	FTransformCurve BestLapTransformAtLapTime;
+	FTransformCurve EmptyCurve;
+	TObjectPtr<AGhostActor> GhostPawn = nullptr;
 	TObjectPtr<UPraktykiGameInstance> GameInstance = nullptr;
-	
 	FTimerHandle RaceTimer;
 	float GameTimeAtLapStart = 0.f;
 	float LapTimeElapsed = 0.f;
@@ -111,4 +104,6 @@ private:
 	void StartRaceTimer();
 	void StopRaceTimer();
 	void PopulateLapInfoData();
+	void ShowGhost();
+	void UpdateGhostLocation();
 };

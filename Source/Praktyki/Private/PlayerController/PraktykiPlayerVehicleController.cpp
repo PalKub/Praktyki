@@ -6,11 +6,18 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Actors/GhostActor.h"
 #include "Game/PraktykiMainMenuHUD.h"
 #include "Game/PraktykiPlayerState.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerVehicle/PlayerVehiclePawn.h"
+
+TObjectPtr<AGhostActor> APraktykiPlayerVehicleController::SpawnGhost(const FVector& Location,
+	const FRotator& Rotation) const
+{
+	return GetWorld()->SpawnActor<AGhostActor>(GhostActorClass, Location, Rotation);
+}
 
 void APraktykiPlayerVehicleController::StartPracticeMode()
 {

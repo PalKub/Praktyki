@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "PraktykiPlayerVehicleController.generated.h"
 
+class AGhostActor;
 enum class ELiveryColor : uint8;
 class APlayerVehiclePawn;
 struct FInputActionValue;
@@ -18,7 +19,10 @@ UCLASS()
 class PRAKTYKI_API APraktykiPlayerVehicleController : public APlayerController
 {
 	GENERATED_BODY()
-
+	
+public:
+	TObjectPtr<AGhostActor> SpawnGhost(const FVector& Location, const FRotator& Rotation) const;
+	
 protected:
 	UFUNCTION(BlueprintCallable)
 	void StartPracticeMode();
@@ -47,6 +51,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APlayerVehiclePawn> PlayerVehicleClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AGhostActor> GhostActorClass;
 
 	void Accelerate(const FInputActionValue& InputActionValue);
 	void Brake(const FInputActionValue& InputActionValue);
