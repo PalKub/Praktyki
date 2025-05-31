@@ -11,7 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "PlayerVehicle/PlayerVehiclePawn.h"
 
-void APraktykiPlayerVehicleController::StartRacingMode()
+void APraktykiPlayerVehicleController::StartPracticeMode()
 {
 	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
 	{
@@ -20,7 +20,29 @@ void APraktykiPlayerVehicleController::StartRacingMode()
 			UnPossess();
 			CurrentPawn->Destroy();
 		}
-		APawn* NewPawn = GetWorld()->SpawnActor<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
+		APlayerVehiclePawn* NewPawn = GetWorld()->SpawnActor<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
+		Possess(NewPawn);
+		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
+		{
+			HUD->OpenRacingHUDWidget();
+		}
+	}
+}
+
+void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor)
+{
+	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
+	{
+		if (APawn* CurrentPawn = GetPawn())
+		{
+			UnPossess();
+			CurrentPawn->Destroy();
+		}
+		APlayerVehiclePawn* NewPawn = GetWorld()->SpawnActorDeferred<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
+		NewPawn->SetLivery(LiveryColor);
+		NewPawn->SetTimeLimit(TimeLimit);
+		NewPawn->SetShouldShowGhost(bShowGhost);
+		NewPawn->FinishSpawning(PlayerStart->GetActorTransform());
 		Possess(NewPawn);
 		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
 		{

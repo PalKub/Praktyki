@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "PraktykiPlayerVehicleController.generated.h"
 
+enum class ELiveryColor : uint8;
 class APlayerVehiclePawn;
 struct FInputActionValue;
 class UInputAction;
@@ -20,7 +21,10 @@ class PRAKTYKI_API APraktykiPlayerVehicleController : public APlayerController
 
 protected:
 	UFUNCTION(BlueprintCallable)
-	void StartRacingMode();
+	void StartPracticeMode();
+
+	UFUNCTION(BlueprintCallable)
+	void StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor);
 	
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

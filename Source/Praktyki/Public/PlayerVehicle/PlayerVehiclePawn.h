@@ -13,6 +13,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpeedChangedSignature, int32, Spe
 /**
  * 
  */
+UENUM(BlueprintType)
+enum class ELiveryColor : uint8
+{
+	ELC_Default UMETA(DisplayName = "Default"),
+	ELC_Blue UMETA(DisplayName = "Blue"),
+	ELC_Orange UMETA(DisplayName = "Orange"),
+	ELC_Red UMETA(DisplayName = "Red")
+};
+
 UCLASS()
 class PRAKTYKI_API APlayerVehiclePawn : public AWheeledVehiclePawn
 {
@@ -25,9 +34,13 @@ public:
 	FOnSpeedChangedSignature OnSpeedChangedDelegate;
 
 	void SetCameraRotation(const FVector2D NewRotation);
+	void SetLivery(const ELiveryColor LiveryColor);
+	void SetTimeLimit(const int32 NewTimeLimit) { TimeLimit = NewTimeLimit; }
+	void SetShouldShowGhost(bool bShouldShowGhost) { bShowGhost = bShouldShowGhost; }
 
 protected:
-	virtual void Tick(float DeltaSeconds) override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void UnPossessed() override;
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -132,5 +145,24 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USpringArmComponent> SpringArm;
 
+	UPROPERTY(EditDefaultsOnly)
+	float UpdateSpeedFrequency = 0.1f;
+
+	UPROPERTY(EditDefaultsOnly)
+	FLinearColor LiveryBlueColor;
+
+	UPROPERTY(EditDefaultsOnly)
+	FLinearColor LiveryOrangeColor;
+
+	UPROPERTY(EditDefaultsOnly)
+	FLinearColor LiveryRedColor;
+
 	int32 VehicleSpeed = 0;
+	FTimerHandle UpdateSpeedTimer;
+	TArray<TObjectPtr<UStaticMeshComponent>> LiveryMeshes;
+	int32 TimeLimit = 10.f;
+	bool bShowGhost = true;
+
+	void UpdateSpeed();
+	void SetLiveryColor(const FLinearColor Color);
 };
