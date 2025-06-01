@@ -154,9 +154,9 @@ void APraktykiPlayerState::ShowGhost()
 
 void APraktykiPlayerState::UpdateGhostLocation()
 {
-	GhostPawn->SetActorTransform(BestLapTransformAtLapTime.Evaluate(LapTimeElapsed, 1.f));
 	if (LapTimeElapsed >= BestLapTime)
 	{
 		GhostPawn->Destroy();
 	}
+	else GhostPawn->SetActorTransform(BestLapTransformAtLapTime.Evaluate(LapTimeElapsed, 1.f));
 }
