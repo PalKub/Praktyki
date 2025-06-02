@@ -8,6 +8,28 @@
 #include "Game/PraktykiGameInstance.h"
 #include "PlayerController/PraktykiPlayerVehicleController.h"
 
+FLapInfo APraktykiPlayerState::GetBestLapInfo()
+{
+	if (BestLapTime == 0.f) return FLapInfo();
+	FLapInfo Info;
+	Info.LapTime = BestLapTime;
+	Info.SectorOneTime = BestLapSectorOne;
+	Info.SectorTwoTime = BestLapSectorTwo;
+	Info.SectorThreeTime = BestLapSectorThree;
+	return Info;
+}
+
+FLapInfo APraktykiPlayerState::GetOptimalLapInfo()
+{
+	if (BestLapTime == 0.f) return FLapInfo();
+	FLapInfo Info;
+	Info.LapTime = BestSectorOneTime + BestSectorTwoTime + BestSectorThreeTime;
+	Info.SectorOneTime = BestSectorOneTime;
+	Info.SectorTwoTime = BestSectorTwoTime;
+	Info.SectorThreeTime = BestSectorThreeTime;
+	return Info;
+}
+
 void APraktykiPlayerState::StartFinishTriggered()
 {
 	if (!GameInstance) GameInstance = Cast<UPraktykiGameInstance>(GetGameInstance());
@@ -92,6 +114,9 @@ void APraktykiPlayerState::ResetData()
 	BestSectorOneTime = 0.f;
 	BestSectorTwoTime = 0.f;
 	BestSectorThreeTime = 0.f;
+	BestLapSectorOne = 0.f;
+	BestLapSectorTwo = 0.f;
+	BestLapSectorThree = 0.f;
 	PreviousDistance = 0.f;
 	bRaceTimeMeasuringActive = false;
 	bStartFinishTriggered = false;
@@ -133,6 +158,9 @@ void APraktykiPlayerState::StopRaceTimer()
 	{
 		bIsBestLap = true;
 		BestLapTime = LapTimeElapsed;
+		BestLapSectorOne = CurrentSectorOneTime;
+		BestLapSectorTwo = CurrentSectorTwoTime;
+		BestLapSectorThree = CurrentSectorThreeTime;
 		BestDistanceAtLapTime = CurrentDistanceAtLapTime;
 		BestLapTimeAtDistance = CurrentLapTimeAtDistance;
 		BestLapTransformAtLapTime.CopyCurve(CurrentLapTransformAtLapTime);

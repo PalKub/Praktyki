@@ -63,6 +63,15 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnLapCompletedSignature OnLapTimeCompletedDelegate;
 
+	UFUNCTION(BlueprintCallable)
+	FLapInfo GetBestLapInfo();
+
+	UFUNCTION(BlueprintCallable)
+	FLapInfo GetOptimalLapInfo();
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetNumberOfLapsCompleted() const { return LapsInfoArray.Num(); }
+
 	TObjectPtr<AGhostActor> GetGhostActor() { return GhostPawn; }
 	void StartFinishTriggered();
 	void SectorTwoTriggered();
@@ -107,6 +116,9 @@ private:
 	float BestSectorOneTime = 0.f;
 	float BestSectorTwoTime = 0.f;
 	float BestSectorThreeTime = 0.f;
+	float BestLapSectorOne = 0.f;
+	float BestLapSectorTwo = 0.f;
+	float BestLapSectorThree = 0.f;
 	float PreviousDistance = 0.f;
 	bool bRaceTimeMeasuringActive = false;
 	bool bStartFinishTriggered = false;
