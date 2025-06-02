@@ -3,6 +3,8 @@
 
 #include "Actors/GhostActor.h"
 
+#include "Components/TimelineComponent.h"
+
 AGhostActor::AGhostActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -83,4 +85,41 @@ AGhostActor::AGhostActor()
 	RightMirrorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Mirror_Right");
 	RightMirrorMeshComponent->SetupAttachment(GetRootComponent(), "MirrorRightSocket");
 	RightMirrorMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	TransformTimeline = CreateDefaultSubobject<UTimelineComponent>("TransformTimeline");
+}
+
+void AGhostActor::SetLapData(const FTransformCurve& TransformCurve, UCurveFloat* DistanceAtLapTime, UCurveFloat* LapTimeAtDistance)
+{
+	LapCurve = TransformCurve;
+	DistanceToLapTime = DistanceAtLapTime;
+	ProgressFunction.BindUFunction(this, FName("UpdateTimeline"));
+	FinishedFunction.BindUFunction(this, FName("TimeLineFinished"));
+	TransformTimeline->AddInterpFloat(LapTimeAtDistance, ProgressFunction);
+	TransformTimeline->SetTimelineFinishedFunc(FinishedFunction);
+}
+
+void AGhostActor::StartMoving() const
+{
+	TransformTimeline->SetPlayRate(1.0f);
+	TransformTimeline->PlayFromStart();
+}
+
+void AGhostActor::Destroyed()
+{
+	Super::Destroyed();
+
+	if (TransformTimeline->IsActive()) TransformTimeline->Deactivate();
+}
+
+void AGhostActor::UpdateTimeline(const float Distance)
+{
+	const float Time = DistanceToLapTime->GetFloatValue(Distance);
+	SetActorTransform(LapCurve.Evaluate(Time, 1.0f));
+}
+
+void AGhostActor::TimeLineFinished()
+{
+	TransformTimeline->Deactivate();
+	Destroy();
 }

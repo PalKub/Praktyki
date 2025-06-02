@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "GhostActor.generated.h"
+
+class UTimelineComponent;
 
 UCLASS()
 class PRAKTYKI_API AGhostActor : public AActor
@@ -13,7 +16,12 @@ class PRAKTYKI_API AGhostActor : public AActor
 	
 public:	
 	AGhostActor();
+	void SetLapData(const FTransformCurve& TransformCurve, UCurveFloat* DistanceAtLapTime, UCurveFloat* LapTimeAtDistance);
+	void StartMoving() const;
 
+protected:
+	virtual void Destroyed() override;
+	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USkeletalMeshComponent> MainMesh;
@@ -74,4 +82,23 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMaterialInstance> GhostCarMaterial;
+
+	UPROPERTY()
+	TObjectPtr<UTimelineComponent> TransformTimeline;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> DistanceToLapTime;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> LapTimeToDistance;
+
+	FOnTimelineFloat ProgressFunction;
+	FOnTimelineEvent FinishedFunction;
+	FTransformCurve LapCurve;
+
+	UFUNCTION()
+	void UpdateTimeline(const float Distance);
+
+	UFUNCTION()
+	void TimeLineFinished();
 };

@@ -32,6 +32,7 @@ void APraktykiPlayerState::StartFinishTriggered()
 			GameTimeAtLapStart = GetWorld()->GetTimeSeconds();
 
 			if (!CurrentDistanceAtLapTime || BestDistanceAtLapTime == CurrentDistanceAtLapTime) CurrentDistanceAtLapTime = NewObject<UCurveFloat>();
+			if (!CurrentLapTimeAtDistance || BestLapTimeAtDistance == CurrentLapTimeAtDistance) CurrentLapTimeAtDistance = NewObject<UCurveFloat>();
 			else CurrentDistanceAtLapTime->ResetCurve();
 
 			CurrentLapTransformAtLapTime.CopyCurve(EmptyCurve);
@@ -104,6 +105,7 @@ void APraktykiPlayerState::StopRaceTimer()
 		bIsBestLap = true;
 		BestLapTime = LapTimeElapsed;
 		BestDistanceAtLapTime = CurrentDistanceAtLapTime;
+		BestLapTimeAtDistance = CurrentLapTimeAtDistance;
 		BestLapTransformAtLapTime.CopyCurve(CurrentLapTransformAtLapTime);
 	}
 	
@@ -128,6 +130,8 @@ void APraktykiPlayerState::PopulateLapInfoData()
 		CurrentDistanceAtLapTime->FloatCurve.AddKey(DistanceAlongTrackSpline, LapTimeElapsed);
 		PreviousDistance = DistanceAlongTrackSpline;
 	}
+
+	CurrentLapTimeAtDistance->FloatCurve.AddKey(LapTimeElapsed, DistanceAlongTrackSpline);
 	
 	CurrentLapTransformAtLapTime.UpdateOrAddKey(GetPawn()->GetActorTransform(), LapTimeElapsed);
 
@@ -137,8 +141,6 @@ void APraktykiPlayerState::PopulateLapInfoData()
 		OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, Delta);
 	}
 	else OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, 0.f);
-
-	if (GhostPawn) UpdateGhostLocation();
 }
 
 void APraktykiPlayerState::ShowGhost()
@@ -149,14 +151,7 @@ void APraktykiPlayerState::ShowGhost()
 	if (const APraktykiPlayerVehicleController* PlayerController = Cast<APraktykiPlayerVehicleController>(GetPlayerController()))
 	{
 		GhostPawn = PlayerController->SpawnGhost(StartTransform.GetLocation(), StartTransform.Rotator());
+		GhostPawn->SetLapData(BestLapTransformAtLapTime, BestDistanceAtLapTime, BestLapTimeAtDistance);
+		GhostPawn->StartMoving();
 	}
-}
-
-void APraktykiPlayerState::UpdateGhostLocation()
-{
-	if (LapTimeElapsed >= BestLapTime)
-	{
-		GhostPawn->Destroy();
-	}
-	else GhostPawn->SetActorTransform(BestLapTransformAtLapTime.Evaluate(LapTimeElapsed, 1.f));
 }

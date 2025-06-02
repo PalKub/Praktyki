@@ -76,6 +76,12 @@ private:
 	TObjectPtr<UCurveFloat> BestDistanceAtLapTime = nullptr;
 
 	UPROPERTY()
+	TObjectPtr<UCurveFloat> CurrentLapTimeAtDistance = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> BestLapTimeAtDistance = nullptr;
+
+	UPROPERTY()
 	TArray<FLapInfo> LapsInfoArray = TArray<FLapInfo>();
 
 	FTransformCurve CurrentLapTransformAtLapTime;
@@ -105,5 +111,4 @@ private:
 	void StopRaceTimer();
 	void PopulateLapInfoData();
 	void ShowGhost();
-	void UpdateGhostLocation();
 };
