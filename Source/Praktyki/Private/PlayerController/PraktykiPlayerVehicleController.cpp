@@ -30,9 +30,16 @@ void APraktykiPlayerVehicleController::StartPracticeMode()
 		}
 		APlayerVehiclePawn* NewPawn = GetWorld()->SpawnActor<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
 		Possess(NewPawn);
+		
 		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
 		{
 			HUD->OpenRacingHUDWidget();
+		}
+
+		if (APraktykiPlayerState* PraktykiPlayerState = Cast<APraktykiPlayerState>(PlayerState))
+		{
+			PraktykiPlayerState->SetTimeLimit(0);
+			PraktykiPlayerState->SetShouldShowGhost(false);
 		}
 	}
 }
@@ -84,8 +91,9 @@ void APraktykiPlayerVehicleController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::Brake);
 	EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &APraktykiPlayerVehicleController::Brake);
 	EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::Turn);
-	EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Completed, this, &APraktykiPlayerVehicleController::Turn);
+	EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Completed, this, &APraktykiPlayerVehicleController::StopTurning);
 	EnhancedInputComponent->BindAction(RotateCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::RotateCamera);
+	EnhancedInputComponent->BindAction(ChangeCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::ChangeCamera);
 }
 
 void APraktykiPlayerVehicleController::Accelerate(const FInputActionValue& InputActionValue)
@@ -106,9 +114,20 @@ void APraktykiPlayerVehicleController::Brake(const FInputActionValue& InputActio
 
 void APraktykiPlayerVehicleController::Turn(const FInputActionValue& InputActionValue)
 {
-	if (const APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
+	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
+	{
+		if (GetWorldTimerManager().IsTimerActive(ResetWheelRotationTimer)) GetWorldTimerManager().ClearTimer(ResetWheelRotationTimer);
+		PlayerVehicle->GetVehicleMovement()->SetSteeringInput(InputActionValue.Get<float>());
+		PlayerVehicle->UpdateSteeringWheelPosition();
+	}
+}
+
+void APraktykiPlayerVehicleController::StopTurning(const FInputActionValue& InputActionValue)
+{
+	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
 	{
 		PlayerVehicle->GetVehicleMovement()->SetSteeringInput(InputActionValue.Get<float>());
+		GetWorldTimerManager().SetTimer(ResetWheelRotationTimer, PlayerVehicle, &APlayerVehiclePawn::RecenterWheel, 0.05, true);
 	}
 }
 
@@ -117,5 +136,22 @@ void APraktykiPlayerVehicleController::RotateCamera(const FInputActionValue& Inp
 	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
 	{
 		PlayerVehicle->SetCameraRotation(InputActionValue.Get<FVector2D>());
+	}
+}
+
+void APraktykiPlayerVehicleController::ChangeCamera()
+{
+	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
+	{
+		if (bCameraSetToInside)
+		{
+			bCameraSetToInside = false;
+			PlayerVehicle->SetCamera(ECameraPosition::ECP_Outside);
+		}
+		else
+		{
+			bCameraSetToInside = true;
+			PlayerVehicle->SetCamera(ECameraPosition::ECP_Inside);
+		}
 	}
 }

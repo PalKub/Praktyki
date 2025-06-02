@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
 #include "PraktykiPlayerVehicleController.generated.h"
 
@@ -22,6 +23,7 @@ class PRAKTYKI_API APraktykiPlayerVehicleController : public APlayerController
 	
 public:
 	TObjectPtr<AGhostActor> SpawnGhost(const FVector& Location, const FRotator& Rotation) const;
+	FTimerHandle ResetWheelRotationTimer;
 	
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -50,13 +52,20 @@ private:
 	TObjectPtr<UInputAction> TurnAction;
 
 	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> ChangeCameraAction;
+
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APlayerVehiclePawn> PlayerVehicleClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGhostActor> GhostActorClass;
 
+	bool bCameraSetToInside = false;
+
 	void Accelerate(const FInputActionValue& InputActionValue);
 	void Brake(const FInputActionValue& InputActionValue);
 	void Turn(const FInputActionValue& InputActionValue);
+	void StopTurning(const FInputActionValue& InputActionValue);
 	void RotateCamera(const FInputActionValue& InputActionValue);
+	void ChangeCamera();
 };

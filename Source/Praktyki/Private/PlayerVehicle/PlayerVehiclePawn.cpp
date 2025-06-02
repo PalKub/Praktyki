@@ -4,8 +4,10 @@
 #include "PlayerVehicle/PlayerVehiclePawn.h"
 
 #include "ChaosVehicleMovementComponent.h"
+#include "ChaosWheeledVehicleMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "PlayerController/PraktykiPlayerVehicleController.h"
 
 APlayerVehiclePawn::APlayerVehiclePawn()
 {
@@ -161,6 +163,63 @@ void APlayerVehiclePawn::SetLivery(const ELiveryColor LiveryColor)
 	case ELiveryColor::ELC_Red:
 		SetLiveryColor(LiveryRedColor);
 		break;
+	}
+}
+
+void APlayerVehiclePawn::SetCamera(const ECameraPosition CameraPosition) const
+{
+	switch (CameraPosition)
+	{
+	case ECameraPosition::ECP_Inside:
+		Camera->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "CarInteriorGameplayCamera");
+		break;
+
+	case ECameraPosition::ECP_Outside:
+		Camera->AttachToComponent(SpringArm, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		break;
+	}
+}
+
+void APlayerVehiclePawn::UpdateSteeringWheelPosition() const
+{
+	if (UChaosWheeledVehicleMovementComponent* MovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
+	{
+		if (MovementComponent->Wheels.Num() > 3 && GetWorld()->HasBegunPlay())
+		{
+			float SteeringAngle; 
+			if (MovementComponent->Wheels[0]->GetSteerAngle() < 0) SteeringAngle = MovementComponent->Wheels[0]->GetSteerAngle();
+			else SteeringAngle = MovementComponent->Wheels[1]->GetSteerAngle();
+			FRotator NewRotation;
+			NewRotation.Roll = SteeringAngle;
+			NewRotation.Pitch = SteeringWheelMeshComponent->GetRelativeRotation().Pitch;
+			NewRotation.Yaw = SteeringWheelMeshComponent->GetRelativeRotation().Yaw;
+			SteeringWheelMeshComponent->SetRelativeRotation(NewRotation);
+		}
+	}
+}
+
+void APlayerVehiclePawn::RecenterWheel() const
+{
+	if (UChaosWheeledVehicleMovementComponent* MovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
+	{
+		if (MovementComponent->Wheels.Num() > 3 && GetWorld()->HasBegunPlay())
+		{
+			float SteeringAngle; 
+			if (MovementComponent->Wheels[0]->GetSteerAngle() < 0) SteeringAngle = MovementComponent->Wheels[0]->GetSteerAngle();
+			else SteeringAngle = MovementComponent->Wheels[1]->GetSteerAngle();
+			FRotator NewRotation;
+			NewRotation.Roll = SteeringAngle;
+			NewRotation.Pitch = SteeringWheelMeshComponent->GetRelativeRotation().Pitch;
+			NewRotation.Yaw = SteeringWheelMeshComponent->GetRelativeRotation().Yaw;
+			SteeringWheelMeshComponent->SetRelativeRotation(NewRotation);
+			if (SteeringAngle == 0)
+			{
+				if (APraktykiPlayerVehicleController* VehicleController = Cast<APraktykiPlayerVehicleController>(Controller))
+				{
+					VehicleController->GetWorldTimerManager().ClearTimer(VehicleController->ResetWheelRotationTimer);
+				}
+			}
+		}
 	}
 }
 

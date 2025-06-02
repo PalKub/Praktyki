@@ -22,6 +22,13 @@ enum class ELiveryColor : uint8
 	ELC_Red UMETA(DisplayName = "Red")
 };
 
+UENUM()
+enum class ECameraPosition : uint8
+{
+	ECP_Outside UMETA(DisplayName = "Outside"),
+	ECP_Inside UMETA(DisplayName = "Inside")
+};
+
 UCLASS()
 class PRAKTYKI_API APlayerVehiclePawn : public AWheeledVehiclePawn
 {
@@ -33,8 +40,13 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnSpeedChangedSignature OnSpeedChangedDelegate;
 
+	FTimerHandle UpdateSpeedTimer;
+
 	void SetCameraRotation(const FVector2D NewRotation);
 	void SetLivery(const ELiveryColor LiveryColor);
+	void SetCamera(const ECameraPosition CameraPosition) const;
+	void UpdateSteeringWheelPosition() const;
+	void RecenterWheel() const;
 
 protected:
 	virtual void PossessedBy(AController* NewController) override;
@@ -156,7 +168,6 @@ private:
 	FLinearColor LiveryRedColor;
 
 	int32 VehicleSpeed = 0;
-	FTimerHandle UpdateSpeedTimer;
 	TArray<TObjectPtr<UStaticMeshComponent>> LiveryMeshes;
 
 	void UpdateSpeed();
