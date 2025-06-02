@@ -23,6 +23,7 @@ class PRAKTYKI_API APraktykiPlayerVehicleController : public APlayerController
 	
 public:
 	TObjectPtr<AGhostActor> SpawnGhost(const FVector& Location, const FRotator& Rotation) const;
+	void RaceTimeEnded();
 	FTimerHandle ResetWheelRotationTimer;
 	
 protected:

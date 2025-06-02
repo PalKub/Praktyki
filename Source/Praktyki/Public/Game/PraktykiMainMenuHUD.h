@@ -15,7 +15,11 @@ class PRAKTYKI_API APraktykiMainMenuHUD : public AHUD
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable)
+	void OpenMainMenuWidget();
+	
 	void OpenRacingHUDWidget();
+	void OpenRaceSummaryWidget();
 
 protected:
 	virtual void BeginPlay() override;
@@ -27,6 +31,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> RacingHUDClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> RaceSummaryWidgetClass;
+
 	TObjectPtr<UUserWidget> MainMenuWidget;
 	TObjectPtr<UUserWidget> RacingHUDWidget;
+	TObjectPtr<UUserWidget> RaceSummaryWidget;
 };

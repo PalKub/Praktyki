@@ -43,6 +43,7 @@ struct FLapInfo
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLapTimeChangeSignature, float, LapTimeElapsed, float, Delta);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSectorCompletedSignature, ESectorNumber, SectorNumber, float, SectorTime, bool, bIsPurple);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLapCompletedSignature, FLapInfo, LapInfo, bool, bIsBestLap);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeRemainingChangedSignature, int32, TimeRemaining);
 
 UCLASS()
 class PRAKTYKI_API APraktykiPlayerState : public APlayerState
@@ -50,6 +51,9 @@ class PRAKTYKI_API APraktykiPlayerState : public APlayerState
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintAssignable)
+	FOnTimeRemainingChangedSignature OnTimeRemainingChangedDelegate;
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnLapTimeChangeSignature OnLapTimeChangeDelegate;
 
@@ -59,11 +63,14 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnLapCompletedSignature OnLapTimeCompletedDelegate;
 
+	TObjectPtr<AGhostActor> GetGhostActor() { return GhostPawn; }
 	void StartFinishTriggered();
 	void SectorTwoTriggered();
 	void SectorThreeTriggered();
 	void SetTimeLimit(const int32 NewTimeLimit) { TimeLimit = NewTimeLimit; }
-	void SetShouldShowGhost(bool bShouldShowGhost) { bShowGhost = bShouldShowGhost; }
+	void SetShouldShowGhost(const bool bShouldShowGhost) { bShowGhost = bShouldShowGhost; }
+	void InitializeTimeLimit();
+	void ResetData();
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -90,6 +97,7 @@ private:
 	TObjectPtr<AGhostActor> GhostPawn = nullptr;
 	TObjectPtr<UPraktykiGameInstance> GameInstance = nullptr;
 	FTimerHandle RaceTimer;
+	FTimerHandle TimeRemainingTimer;
 	float GameTimeAtLapStart = 0.f;
 	float LapTimeElapsed = 0.f;
 	float CurrentSectorOneTime = 0.f;
@@ -104,11 +112,13 @@ private:
 	bool bStartFinishTriggered = false;
 	bool bSectorTwoTriggered = false;
 	bool bSectorThreeTriggered = false;
-	int32 TimeLimit = 10.f;
+	int32 TimeLimit = 0.f;
+	int32 TimeRemaining = 0.f;
 	bool bShowGhost = true;
 	
 	void StartRaceTimer();
 	void StopRaceTimer();
 	void PopulateLapInfoData();
 	void ShowGhost();
+	void TickDownTimeRemaining();
 };

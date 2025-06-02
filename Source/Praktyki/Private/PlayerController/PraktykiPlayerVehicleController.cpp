@@ -6,9 +6,11 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "PraktykiSpectatorCamera.h"
 #include "Actors/GhostActor.h"
 #include "Game/PraktykiMainMenuHUD.h"
 #include "Game/PraktykiPlayerState.h"
+#include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerVehicle/PlayerVehiclePawn.h"
@@ -38,6 +40,7 @@ void APraktykiPlayerVehicleController::StartPracticeMode()
 
 		if (APraktykiPlayerState* PraktykiPlayerState = Cast<APraktykiPlayerState>(PlayerState))
 		{
+			PraktykiPlayerState->ResetData();
 			PraktykiPlayerState->SetTimeLimit(0);
 			PraktykiPlayerState->SetShouldShowGhost(false);
 		}
@@ -59,7 +62,9 @@ void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShow
 
 		if (APraktykiPlayerState* PraktykiPlayerState = Cast<APraktykiPlayerState>(PlayerState))
 		{
+			PraktykiPlayerState->ResetData();
 			PraktykiPlayerState->SetTimeLimit(TimeLimit);
+			PraktykiPlayerState->InitializeTimeLimit();
 			PraktykiPlayerState->SetShouldShowGhost(bShowGhost);
 		}
 
@@ -94,6 +99,25 @@ void APraktykiPlayerVehicleController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Completed, this, &APraktykiPlayerVehicleController::StopTurning);
 	EnhancedInputComponent->BindAction(RotateCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::RotateCamera);
 	EnhancedInputComponent->BindAction(ChangeCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::ChangeCamera);
+}
+
+void APraktykiPlayerVehicleController::RaceTimeEnded()
+{
+	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
+	{
+		if (APawn* CurrentPawn = GetPawn())
+		{
+			UnPossess();
+			CurrentPawn->Destroy();
+		}
+		APraktykiSpectatorCamera* NewPawn = GetWorld()->SpawnActor<APraktykiSpectatorCamera>(GetWorld()->GetAuthGameMode()->GetDefaultPawnClassForController(this), PlayerStart->GetActorTransform());
+		Possess(NewPawn);
+		
+		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
+		{
+			HUD->OpenRaceSummaryWidget();
+		}
+	}
 }
 
 void APraktykiPlayerVehicleController::Accelerate(const FInputActionValue& InputActionValue)

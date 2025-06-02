@@ -80,6 +80,35 @@ void APraktykiPlayerState::SectorThreeTriggered()
 	}
 }
 
+void APraktykiPlayerState::InitializeTimeLimit()
+{
+	TimeRemaining = TimeLimit * 60;
+	GetWorldTimerManager().SetTimer(TimeRemainingTimer, this, &APraktykiPlayerState::TickDownTimeRemaining, 1.f, true, 1.f);
+}
+
+void APraktykiPlayerState::ResetData()
+{
+	BestLapTime = 0.f;
+	BestSectorOneTime = 0.f;
+	BestSectorTwoTime = 0.f;
+	BestSectorThreeTime = 0.f;
+	PreviousDistance = 0.f;
+	bRaceTimeMeasuringActive = false;
+	bStartFinishTriggered = false;
+	bSectorTwoTriggered = false;
+	bSectorThreeTriggered = false;
+	TimeLimit = 0.f;
+	TimeRemaining = 0.f;
+	bShowGhost = true;
+	LapsInfoArray.Empty();
+	if (CurrentDistanceAtLapTime) CurrentDistanceAtLapTime->ResetCurve();
+	if (BestDistanceAtLapTime) BestDistanceAtLapTime->ResetCurve();
+	if (CurrentLapTimeAtDistance) CurrentLapTimeAtDistance->ResetCurve();
+	if (BestLapTimeAtDistance) BestLapTimeAtDistance->ResetCurve();
+	CurrentLapTransformAtLapTime.CopyCurve(EmptyCurve);
+	BestLapTransformAtLapTime.CopyCurve(EmptyCurve);
+}
+
 void APraktykiPlayerState::StartRaceTimer()
 {
 	PopulateLapInfoData();
@@ -153,5 +182,19 @@ void APraktykiPlayerState::ShowGhost()
 		GhostPawn = PlayerController->SpawnGhost(StartTransform.GetLocation(), StartTransform.Rotator());
 		GhostPawn->SetLapData(BestLapTransformAtLapTime, BestDistanceAtLapTime, BestLapTimeAtDistance);
 		GhostPawn->StartMoving();
+	}
+}
+
+void APraktykiPlayerState::TickDownTimeRemaining()
+{
+	TimeRemaining--;
+	OnTimeRemainingChangedDelegate.Broadcast(TimeRemaining);
+	if (TimeRemaining <= 0)
+	{
+		GetWorldTimerManager().ClearTimer(TimeRemainingTimer);
+		if (APraktykiPlayerVehicleController* PlayerController = Cast<APraktykiPlayerVehicleController>(GetPlayerController()))
+		{
+			PlayerController->RaceTimeEnded();
+		}
 	}
 }
