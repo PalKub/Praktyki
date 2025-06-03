@@ -56,10 +56,10 @@ void APraktykiPlayerState::StartFinishTriggered()
 			if (!CurrentDistanceAtLapTime || BestDistanceAtLapTime == CurrentDistanceAtLapTime) CurrentDistanceAtLapTime = NewObject<UCurveFloat>();
 			if (!CurrentLapTimeAtDistance || BestLapTimeAtDistance == CurrentLapTimeAtDistance) CurrentLapTimeAtDistance = NewObject<UCurveFloat>();
 			else CurrentDistanceAtLapTime->ResetCurve();
-
+			if (!bIsValidLap) bIsValidLap = true;
 			CurrentLapTransformAtLapTime.CopyCurve(EmptyCurve);
-
 			PreviousDistance = 0.f;
+			
 			GetWorldTimerManager().SetTimer(RaceTimer, this, &APraktykiPlayerState::StartRaceTimer, RaceTimerTickFrequency, true);
 
 			if (BestLapTime != 0 && bShowGhost)
@@ -80,9 +80,9 @@ void APraktykiPlayerState::SectorTwoTriggered()
 		if (BestSectorOneTime == 0.f || CurrentSectorOneTime < BestSectorOneTime)
 		{
 			BestSectorOneTime = CurrentSectorOneTime;
-			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime, true);
+			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime, true, bIsValidLap);
 		}
-		else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime, false);
+		else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime, false, bIsValidLap);
 	}
 }
 
@@ -96,9 +96,9 @@ void APraktykiPlayerState::SectorThreeTriggered()
 		if (BestSectorTwoTime == 0.f || CurrentSectorTwoTime < BestSectorTwoTime)
 		{
 			BestSectorTwoTime = CurrentSectorTwoTime;
-			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime, true);
+			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime, true, bIsValidLap);
 		}
-		else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime, false);
+		else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime, false, bIsValidLap);
 	}
 }
 
@@ -122,6 +122,7 @@ void APraktykiPlayerState::ResetData()
 	bStartFinishTriggered = false;
 	bSectorTwoTriggered = false;
 	bSectorThreeTriggered = false;
+	bIsValidLap = true;
 	TimeLimit = 0.f;
 	TimeRemaining = 0.f;
 	bShowGhost = true;
@@ -154,7 +155,7 @@ void APraktykiPlayerState::StopRaceTimer()
 	LapsInfoArray.Add(CurrentLapInfo);
 
 	bool bIsBestLap = false;
-	if (BestLapTime == 0.f || LapTimeElapsed < BestLapTime)
+	if ((BestLapTime == 0.f || LapTimeElapsed < BestLapTime) && bIsValidLap)
 	{
 		bIsBestLap = true;
 		BestLapTime = LapTimeElapsed;
@@ -169,11 +170,11 @@ void APraktykiPlayerState::StopRaceTimer()
 	if (BestSectorThreeTime == 0.f || CurrentSectorThreeTime < BestSectorThreeTime)
 	{
 		BestSectorThreeTime = CurrentSectorThreeTime;
-		OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime, true);
+		OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime, true, bIsValidLap);
 	}
-	else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime, false);
+	else OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime, false, bIsValidLap);
 
-	OnLapTimeCompletedDelegate.Broadcast(CurrentLapInfo, bIsBestLap);
+	OnLapTimeCompletedDelegate.Broadcast(CurrentLapInfo, bIsBestLap, bIsValidLap);
 }
 
 void APraktykiPlayerState::PopulateLapInfoData()
@@ -195,9 +196,9 @@ void APraktykiPlayerState::PopulateLapInfoData()
 	if (BestLapTime > 0.f)
 	{
 		const float Delta = LapTimeElapsed - BestDistanceAtLapTime->GetFloatValue(DistanceAlongTrackSpline);
-		OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, Delta);
+		OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, Delta, bIsValidLap);
 	}
-	else OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, 0.f);
+	else OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, 0.f, bIsValidLap);
 }
 
 void APraktykiPlayerState::ShowGhost()

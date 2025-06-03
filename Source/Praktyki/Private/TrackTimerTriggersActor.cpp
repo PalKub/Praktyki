@@ -56,8 +56,7 @@ void ATrackTimerTriggersActor::OnStartFinishBeginOverlap(UPrimitiveComponent* Ov
 	}
 }
 
-void ATrackTimerTriggersActor::OnSectorTwoBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ATrackTimerTriggersActor::OnSectorTwoBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->ActorHasTag("Player"))
 	{
@@ -71,8 +70,7 @@ void ATrackTimerTriggersActor::OnSectorTwoBeginOverlap(UPrimitiveComponent* Over
 	}
 }
 
-void ATrackTimerTriggersActor::OnSectorThreeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ATrackTimerTriggersActor::OnSectorThreeBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->ActorHasTag("Player"))
 	{

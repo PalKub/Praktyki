@@ -40,9 +40,9 @@ struct FLapInfo
 	float SectorThreeTime = 0.f;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLapTimeChangeSignature, float, LapTimeElapsed, float, Delta);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnSectorCompletedSignature, ESectorNumber, SectorNumber, float, SectorTime, bool, bIsPurple);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLapCompletedSignature, FLapInfo, LapInfo, bool, bIsBestLap);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLapTimeChangeSignature, float, LapTimeElapsed, float, Delta, bool, bIsValidLap);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnSectorCompletedSignature, ESectorNumber, SectorNumber, float, SectorTime, bool, bIsPurple, bool, bIsValidLap);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLapCompletedSignature, FLapInfo, LapInfo, bool, bIsBestLap, bool, bIsValidLap);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeRemainingChangedSignature, int32, TimeRemaining);
 
 UCLASS()
@@ -80,6 +80,7 @@ public:
 	void SetShouldShowGhost(const bool bShouldShowGhost) { bShowGhost = bShouldShowGhost; }
 	void InitializeTimeLimit();
 	void ResetData();
+	void InvalidateLap() { bIsValidLap = false; }
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -124,6 +125,7 @@ private:
 	bool bStartFinishTriggered = false;
 	bool bSectorTwoTriggered = false;
 	bool bSectorThreeTriggered = false;
+	bool bIsValidLap = true;
 	int32 TimeLimit = 0.f;
 	int32 TimeRemaining = 0.f;
 	bool bShowGhost = true;
