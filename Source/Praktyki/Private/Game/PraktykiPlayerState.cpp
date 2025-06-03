@@ -57,7 +57,7 @@ void APraktykiPlayerState::StartFinishTriggered()
 			if (!CurrentLapTimeAtDistance || BestLapTimeAtDistance == CurrentLapTimeAtDistance) CurrentLapTimeAtDistance = NewObject<UCurveFloat>();
 			else CurrentDistanceAtLapTime->ResetCurve();
 			if (!bIsValidLap) bIsValidLap = true;
-			CurrentLapTransformAtLapTime.CopyCurve(EmptyCurve);
+			CurrentLapTransformAtLapTime = FTransformCurve();
 			PreviousDistance = 0.f;
 			
 			GetWorldTimerManager().SetTimer(RaceTimer, this, &APraktykiPlayerState::StartRaceTimer, RaceTimerTickFrequency, true);
@@ -131,8 +131,14 @@ void APraktykiPlayerState::ResetData()
 	if (BestDistanceAtLapTime) BestDistanceAtLapTime->ResetCurve();
 	if (CurrentLapTimeAtDistance) CurrentLapTimeAtDistance->ResetCurve();
 	if (BestLapTimeAtDistance) BestLapTimeAtDistance->ResetCurve();
-	CurrentLapTransformAtLapTime.CopyCurve(EmptyCurve);
-	BestLapTransformAtLapTime.CopyCurve(EmptyCurve);
+	CurrentLapTransformAtLapTime = FTransformCurve();
+	BestLapTransformAtLapTime = FTransformCurve();
+	CurrentLapTransformAtLapTime.RotationCurve.FloatCurves->Reset();
+	CurrentLapTransformAtLapTime.TranslationCurve.FloatCurves->Reset();
+	CurrentLapTransformAtLapTime.ScaleCurve.FloatCurves->Reset();
+	BestLapTransformAtLapTime.RotationCurve.FloatCurves->Reset();
+	BestLapTransformAtLapTime.TranslationCurve.FloatCurves->Reset();
+	BestLapTransformAtLapTime.ScaleCurve.FloatCurves->Reset();
 }
 
 void APraktykiPlayerState::StartRaceTimer()
@@ -164,7 +170,8 @@ void APraktykiPlayerState::StopRaceTimer()
 		BestLapSectorThree = CurrentSectorThreeTime;
 		BestDistanceAtLapTime = CurrentDistanceAtLapTime;
 		BestLapTimeAtDistance = CurrentLapTimeAtDistance;
-		BestLapTransformAtLapTime.CopyCurve(CurrentLapTransformAtLapTime);
+		BestLapTransformAtLapTime = FTransformCurve();
+		BestLapTransformAtLapTime = CurrentLapTransformAtLapTime;
 	}
 	
 	if (BestSectorThreeTime == 0.f || CurrentSectorThreeTime < BestSectorThreeTime)

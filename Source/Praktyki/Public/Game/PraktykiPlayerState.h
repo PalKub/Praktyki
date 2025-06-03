@@ -103,7 +103,6 @@ private:
 
 	FTransformCurve CurrentLapTransformAtLapTime;
 	FTransformCurve BestLapTransformAtLapTime;
-	FTransformCurve EmptyCurve;
 	TObjectPtr<AGhostActor> GhostPawn = nullptr;
 	TObjectPtr<UPraktykiGameInstance> GameInstance = nullptr;
 	FTimerHandle RaceTimer;
