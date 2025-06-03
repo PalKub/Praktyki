@@ -11,7 +11,8 @@
 
 APlayerVehiclePawn::APlayerVehiclePawn()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickInterval = 0.1f;
 	
 	InteriorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Interior");
 	InteriorMeshComponent->SetupAttachment(GetMesh());
@@ -235,6 +236,40 @@ void APlayerVehiclePawn::UnPossessed()
 	Super::UnPossessed();
 
 	if (GetWorldTimerManager().IsTimerActive(UpdateSpeedTimer)) GetWorldTimerManager().ClearTimer(UpdateSpeedTimer);
+}
+
+void APlayerVehiclePawn::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (UChaosWheeledVehicleMovementComponent* MovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
+	{
+		for (int32 i = 0; i < MovementComponent->GetNumWheels(); i++)
+		{
+			const FWheelStatus& WheelStatus = MovementComponent->GetWheelState(i);
+			if (WheelStatus.bInContact)
+			{
+				switch (UPhysicalMaterial::DetermineSurfaceType(WheelStatus.PhysMaterial.Get()))
+				{
+				case SurfaceType1:
+					MovementComponent->SetWheelFrictionMultiplier(i, 1.f);
+					break;
+
+				case SurfaceType2:
+					MovementComponent->SetWheelFrictionMultiplier(i, 0.5f);
+					break;
+
+				case SurfaceType3:
+					MovementComponent->SetWheelFrictionMultiplier(i, 0.3f);
+					break;
+
+				default:
+					break;
+				}
+				
+			}
+		}
+	}
 }
 
 void APlayerVehiclePawn::UpdateSpeed()
