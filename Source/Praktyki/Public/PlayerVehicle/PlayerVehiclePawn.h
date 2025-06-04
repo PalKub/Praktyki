@@ -6,11 +6,12 @@
 #include "WheeledVehiclePawn.h"
 #include "PlayerVehiclePawn.generated.h"
 
+class APraktykiPlayerVehicleController;
+class UChaosWheeledVehicleMovementComponent;
 class UImpactPoint;
 class USpringArmComponent;
 class UCameraComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpeedChangedSignature, int32, Speed);
 /**
  * 
  */
@@ -23,12 +24,25 @@ enum class ELiveryColor : uint8
 	ELC_Red UMETA(DisplayName = "Red")
 };
 
+UENUM(BlueprintType)
+enum class EDamageLevel : uint8
+{
+	EDL_None UMETA(DisplayName = "None"),
+	EDL_Minor UMETA(DisplayName = "Minor"),
+	EDL_Serious UMETA(DisplayName = "Serious"),
+	EDL_Critical UMETA(DisplayName = "Critical"),
+	EDL_Broken UMETA(DisplayName = "Broken")
+};
+
 UENUM()
 enum class ECameraPosition : uint8
 {
 	ECP_Outside UMETA(DisplayName = "Outside"),
 	ECP_Inside UMETA(DisplayName = "Inside")
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpeedChangedSignature, int32, Speed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamageLevelChangedSignature, EDamageLevel, DamageLevel);
 
 UCLASS()
 class PRAKTYKI_API APlayerVehiclePawn : public AWheeledVehiclePawn
@@ -40,6 +54,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnSpeedChangedSignature OnSpeedChangedDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDamageLevelChangedSignature OnDamageLevelChangedDelegate;
 
 	FTimerHandle UpdateSpeedTimer;
 
@@ -196,10 +213,12 @@ private:
 
 	float VehicleDamagePercentage = 0.f;
 	int32 VehicleSpeed = 0;
+	float LastHitTime = 0.f;
+	EDamageLevel CurrentDamageLevel = EDamageLevel::EDL_None;
 	TArray<TObjectPtr<UStaticMeshComponent>> LiveryMeshes;
 	TArray<TObjectPtr<UImpactPoint>> ImpactPoints;
-	
-	float LastHitTime = 0.f;
+	TObjectPtr<UChaosWheeledVehicleMovementComponent> WheeledMovementComponent;
+	TObjectPtr<APraktykiPlayerVehicleController> PlayerVehicleController;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -208,4 +227,5 @@ private:
 	void SetLiveryColor(const FLinearColor Color);
 	TObjectPtr<UImpactPoint> FindClosestImpactPointToLocation (const FVector& Location);
 	void ApplyCosmeticDamage(UImpactPoint* ImpactPoint, const float Percent);
+	void ApplyMechanicalDamage(const float Percent);
 };

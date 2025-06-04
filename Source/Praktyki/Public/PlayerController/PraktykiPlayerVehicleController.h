@@ -25,6 +25,7 @@ public:
 	TObjectPtr<AGhostActor> SpawnGhost(const FVector& Location, const FRotator& Rotation) const;
 	void RaceTimeEnded();
 	FTimerHandle ResetWheelRotationTimer;
+	void SetThrottleMultiplier(const float NewMultiplier) { ThrottleMultiplier = NewMultiplier; }
 	
 protected:
 	UFUNCTION(BlueprintCallable)
@@ -62,6 +63,7 @@ private:
 	TSubclassOf<AGhostActor> GhostActorClass;
 
 	bool bCameraSetToInside = false;
+	float ThrottleMultiplier = 1.f;
 
 	void Accelerate(const FInputActionValue& InputActionValue);
 	void Brake(const FInputActionValue& InputActionValue);

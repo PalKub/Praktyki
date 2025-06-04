@@ -228,13 +228,13 @@ void APlayerVehiclePawn::SetCamera(const ECameraPosition CameraPosition) const
 
 void APlayerVehiclePawn::UpdateSteeringWheelPosition() const
 {
-	if (UChaosWheeledVehicleMovementComponent* MovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
+	if (WheeledMovementComponent)
 	{
-		if (MovementComponent->Wheels.Num() > 3 && GetWorld()->HasBegunPlay())
+		if (WheeledMovementComponent->Wheels.Num() > 3 && GetWorld()->HasBegunPlay())
 		{
 			float SteeringAngle; 
-			if (MovementComponent->Wheels[0]->GetSteerAngle() < 0) SteeringAngle = MovementComponent->Wheels[0]->GetSteerAngle();
-			else SteeringAngle = MovementComponent->Wheels[1]->GetSteerAngle();
+			if (WheeledMovementComponent->Wheels[0]->GetSteerAngle() < 0) SteeringAngle = WheeledMovementComponent->Wheels[0]->GetSteerAngle();
+			else SteeringAngle = WheeledMovementComponent->Wheels[1]->GetSteerAngle();
 			FRotator NewRotation;
 			NewRotation.Roll = SteeringAngle * 2;
 			NewRotation.Pitch = SteeringWheelMeshComponent->GetRelativeRotation().Pitch;
@@ -246,13 +246,13 @@ void APlayerVehiclePawn::UpdateSteeringWheelPosition() const
 
 void APlayerVehiclePawn::RecenterWheel() const
 {
-	if (UChaosWheeledVehicleMovementComponent* MovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
+	if (WheeledMovementComponent)
 	{
-		if (MovementComponent->Wheels.Num() > 3 && GetWorld()->HasBegunPlay())
+		if (WheeledMovementComponent->Wheels.Num() > 3 && GetWorld()->HasBegunPlay())
 		{
 			float SteeringAngle; 
-			if (MovementComponent->Wheels[0]->GetSteerAngle() < 0) SteeringAngle = MovementComponent->Wheels[0]->GetSteerAngle();
-			else SteeringAngle = MovementComponent->Wheels[1]->GetSteerAngle();
+			if (WheeledMovementComponent->Wheels[0]->GetSteerAngle() < 0) SteeringAngle = WheeledMovementComponent->Wheels[0]->GetSteerAngle();
+			else SteeringAngle = WheeledMovementComponent->Wheels[1]->GetSteerAngle();
 			FRotator NewRotation;
 			NewRotation.Roll = SteeringAngle * 2;
 			NewRotation.Pitch = SteeringWheelMeshComponent->GetRelativeRotation().Pitch;
@@ -287,31 +287,30 @@ void APlayerVehiclePawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (UChaosWheeledVehicleMovementComponent* MovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
+	if (WheeledMovementComponent)
 	{
-		for (int32 i = 0; i < MovementComponent->GetNumWheels(); i++)
+		for (int32 i = 0; i < WheeledMovementComponent->GetNumWheels(); i++)
 		{
-			const FWheelStatus& WheelStatus = MovementComponent->GetWheelState(i);
+			const FWheelStatus& WheelStatus = WheeledMovementComponent->GetWheelState(i);
 			if (WheelStatus.bInContact)
 			{
 				switch (UPhysicalMaterial::DetermineSurfaceType(WheelStatus.PhysMaterial.Get()))
 				{
 				case SurfaceType1:
-					MovementComponent->SetWheelFrictionMultiplier(i, 1.f);
+					WheeledMovementComponent->SetWheelFrictionMultiplier(i, 1.f);
 					break;
 
 				case SurfaceType2:
-					MovementComponent->SetWheelFrictionMultiplier(i, 0.5f);
+					WheeledMovementComponent->SetWheelFrictionMultiplier(i, 0.5f);
 					break;
 
 				case SurfaceType3:
-					MovementComponent->SetWheelFrictionMultiplier(i, 0.3f);
+					WheeledMovementComponent->SetWheelFrictionMultiplier(i, 0.3f);
 					break;
 
 				default:
 					break;
 				}
-				
 			}
 		}
 	}
@@ -323,6 +322,7 @@ void APlayerVehiclePawn::BeginPlay()
 
 	GetMesh()->SetNotifyRigidBodyCollision(true);
 	GetMesh()->OnComponentHit.AddDynamic(this, &APlayerVehiclePawn::OnHit);
+	WheeledMovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
 }
 
 void APlayerVehiclePawn::UpdateSpeed()
@@ -394,20 +394,56 @@ void APlayerVehiclePawn::ApplyCosmeticDamage(UImpactPoint* ImpactPoint, const fl
 	}
 }
 
+void APlayerVehiclePawn::ApplyMechanicalDamage(const float Percent)
+{
+	VehicleDamagePercentage += Percent;
+	EDamageLevel DamageLevel = EDamageLevel::EDL_None;
+	
+	if (!PlayerVehicleController) PlayerVehicleController = Cast<APraktykiPlayerVehicleController>(GetController());
+	if (PlayerVehicleController)
+	{
+		if (VehicleDamagePercentage < 0.25f) return;
+
+		if (VehicleDamagePercentage >= 1.f)
+		{
+			PlayerVehicleController->SetThrottleMultiplier(0.f);
+			DamageLevel = EDamageLevel::EDL_Broken;
+		}
+		else if (VehicleDamagePercentage >= 0.75f)
+		{
+			PlayerVehicleController->SetThrottleMultiplier(0.4f);
+			DamageLevel = EDamageLevel::EDL_Critical;
+		}
+		else if (VehicleDamagePercentage >= 0.5f)
+		{
+			PlayerVehicleController->SetThrottleMultiplier(0.7f);
+			DamageLevel = EDamageLevel::EDL_Serious;
+		}
+		else if (VehicleDamagePercentage >= 0.25)
+		{
+			PlayerVehicleController->SetThrottleMultiplier(0.9f);
+			DamageLevel = EDamageLevel::EDL_Minor;
+		}
+
+		if (DamageLevel != CurrentDamageLevel)
+		{
+			CurrentDamageLevel = DamageLevel;
+			OnDamageLevelChangedDelegate.Broadcast(CurrentDamageLevel);
+		}
+	}
+}
+
 void APlayerVehiclePawn::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	const float ImpactForce = NormalImpulse.Size();
 	const float Time = GetWorld()->GetTimeSeconds();
 
 	if (Time - LastHitTime < CollisionEventFrequency || ImpactForce < 400000.f) return;
+
 	LastHitTime = Time;
-	
-
 	UImpactPoint* ClosestImpactPoint = FindClosestImpactPointToLocation(Hit.Location);
-
-	float DamagePercent = ImpactForce / 5000000 * DamageScaling;
-	VehicleDamagePercentage += DamagePercent;
+	const float DamagePercent = ImpactForce / 5000000 * DamageScaling;
+	
 	ApplyCosmeticDamage(ClosestImpactPoint, DamagePercent);
-
-	UE_LOG(LogTemp, Warning, TEXT("Damage Percentage: %f"), VehicleDamagePercentage);
+	ApplyMechanicalDamage(DamagePercent);
 }

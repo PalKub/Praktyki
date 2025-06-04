@@ -124,7 +124,7 @@ void APraktykiPlayerVehicleController::Accelerate(const FInputActionValue& Input
 {
 	if (const APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
 	{
-		PlayerVehicle->GetVehicleMovement()->SetThrottleInput(InputActionValue.Get<float>());
+		PlayerVehicle->GetVehicleMovement()->SetThrottleInput(InputActionValue.Get<float>() * ThrottleMultiplier);
 	}
 }
 
@@ -132,7 +132,8 @@ void APraktykiPlayerVehicleController::Brake(const FInputActionValue& InputActio
 {
 	if (const APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
 	{
-		PlayerVehicle->GetVehicleMovement()->SetBrakeInput(InputActionValue.Get<float>());
+		if (ThrottleMultiplier == 0) PlayerVehicle->GetVehicleMovement()->SetBrakeInput(0);
+		else PlayerVehicle->GetVehicleMovement()->SetBrakeInput(InputActionValue.Get<float>());
 	}
 }
 
