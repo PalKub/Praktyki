@@ -6,6 +6,7 @@
 #include "ChaosVehicleMovementComponent.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/ImpactPoint.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "PlayerController/PraktykiPlayerVehicleController.h"
 
@@ -127,6 +128,47 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
 	Camera->SetupAttachment(SpringArm);
+
+	ImpactPointLeftFront = CreateDefaultSubobject<UImpactPoint>("ImpactPointLeftFront");
+	ImpactPointLeftFront->SetupAttachment(GetMesh());
+	ImpactPointLeftFront->BodyMeshesImpacted.Add(DoorLeftMeshComponent);
+	ImpactPointLeftFront->BodyMeshesImpacted.Add(FenderLeftMeshComponent);
+	ImpactPointLeftFront->BodyMeshesImpacted.Add(FrontBumperMeshComponent);
+	ImpactPointLeftFront->BodyMeshesImpacted.Add(LeftMirrorMeshComponent);
+	ImpactPoints.Add(ImpactPointLeftFront);
+
+	ImpactPointLeftRear = CreateDefaultSubobject<UImpactPoint>("ImpactPointLeftRear");
+	ImpactPointLeftRear->SetupAttachment(GetMesh());
+	ImpactPointLeftRear->BodyMeshesImpacted.Add(BodyMeshComponent);
+	ImpactPointLeftRear->BodyMeshesImpacted.Add(RearBumperMeshComponent);
+	ImpactPoints.Add(ImpactPointLeftRear);
+
+	ImpactPointRightFront = CreateDefaultSubobject<UImpactPoint>("ImpactPointRightFront");
+	ImpactPointRightFront->SetupAttachment(GetMesh());
+	ImpactPointRightFront->BodyMeshesImpacted.Add(DoorRightMeshComponent);
+	ImpactPointRightFront->BodyMeshesImpacted.Add(FenderRightMeshComponent);
+	ImpactPointRightFront->BodyMeshesImpacted.Add(FrontBumperMeshComponent);
+	ImpactPointRightFront->BodyMeshesImpacted.Add(RightMirrorMeshComponent);
+	ImpactPoints.Add(ImpactPointRightFront);
+
+	ImpactPointRightRear = CreateDefaultSubobject<UImpactPoint>("ImpactPointRightRear");
+	ImpactPointRightRear->SetupAttachment(GetMesh());
+	ImpactPointRightRear->BodyMeshesImpacted.Add(BodyMeshComponent);
+	ImpactPointRightRear->BodyMeshesImpacted.Add(RearBumperMeshComponent);
+	ImpactPoints.Add(ImpactPointRightRear);
+
+	ImpactPointFront = CreateDefaultSubobject<UImpactPoint>("ImpactPointFront");
+	ImpactPointFront->SetupAttachment(GetMesh());
+	ImpactPointFront->BodyMeshesImpacted.Add(FrontBumperMeshComponent);
+	ImpactPointFront->BodyMeshesImpacted.Add(HoodMeshComponent);
+	ImpactPoints.Add(ImpactPointFront);
+
+	ImpactPointRear = CreateDefaultSubobject<UImpactPoint>("ImpactPointRear");
+	ImpactPointRear->SetupAttachment(GetMesh());
+	ImpactPointRear->BodyMeshesImpacted.Add(RearBumperMeshComponent);
+	ImpactPointRear->BodyMeshesImpacted.Add(BootMeshComponent);
+	ImpactPointRear->BodyMeshesImpacted.Add(SpoilerMeshComponent);
+	ImpactPoints.Add(ImpactPointRear);
 
 	Tags.Add("Player");
 }
@@ -272,6 +314,14 @@ void APlayerVehiclePawn::Tick(float DeltaSeconds)
 	}
 }
 
+void APlayerVehiclePawn::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GetMesh()->SetNotifyRigidBodyCollision(true);
+	GetMesh()->OnComponentHit.AddDynamic(this, &APlayerVehiclePawn::OnHit);
+}
+
 void APlayerVehiclePawn::UpdateSpeed()
 {
 	if (const int32 CurrentSpeed = FMath::TruncToInt32(GetVehicleMovementComponent()->GetForwardSpeed() * 0.036f); CurrentSpeed != VehicleSpeed)
@@ -298,4 +348,38 @@ void APlayerVehiclePawn::SetLiveryColor(const FLinearColor Color)
 			Cast<UMaterialInstanceDynamic>(LiveryMeshes[i]->GetMaterial(0))->SetVectorParameterValue(TEXT("PaintColor"), Color);
 		}
 	}
+}
+
+TObjectPtr<UImpactPoint> APlayerVehiclePawn::FindClosestImpactPointToLocation(const FVector& Location)
+{
+	float ClosestDistance = 0.f;
+	UImpactPoint* ClosestImpactPoint = nullptr;
+
+	for (UImpactPoint* ImpactPoint : ImpactPoints)
+	{
+		const float Distance = FVector::Distance(Location, ImpactPoint->GetComponentLocation());
+		if (Distance < ClosestDistance || ClosestDistance == 0.f)
+		{
+			ClosestImpactPoint = ImpactPoint;
+			ClosestDistance = Distance;
+		}
+	}
+	return ClosestImpactPoint;
+}
+
+void APlayerVehiclePawn::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	const float ImpactForce = NormalImpulse.Size();
+	const float Time = GetWorld()->GetTimeSeconds();
+
+	if (Time - LastHitTime < CollisionEventFrequency || ImpactForce < 400000.f) return;
+	LastHitTime = Time;
+		
+	UE_LOG(LogTemp, Warning, TEXT("Impact Force: %f"), ImpactForce);
+
+	UImpactPoint* ClosestImpactPoint = FindClosestImpactPointToLocation(Hit.Location);
+
+	UE_LOG(LogTemp, Warning, TEXT("Impact Point: %s"), *ClosestImpactPoint->GetName());
+
+	DrawDebugSphere(GetWorld(), Hit.Location, 20, 6, FColor::Red, true, 5.0f);
 }

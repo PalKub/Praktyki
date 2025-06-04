@@ -6,6 +6,7 @@
 #include "WheeledVehiclePawn.h"
 #include "PlayerVehiclePawn.generated.h"
 
+class UImpactPoint;
 class USpringArmComponent;
 class UCameraComponent;
 
@@ -52,6 +53,7 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void BeginPlay() override;
 	
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -157,7 +159,28 @@ private:
 	TObjectPtr<USpringArmComponent> SpringArm;
 
 	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UImpactPoint> ImpactPointLeftFront;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UImpactPoint> ImpactPointLeftRear;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UImpactPoint> ImpactPointRightFront;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UImpactPoint> ImpactPointRightRear;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UImpactPoint> ImpactPointFront;
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UImpactPoint> ImpactPointRear;
+
+	UPROPERTY(EditDefaultsOnly)
 	float UpdateSpeedFrequency = 0.1f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CollisionEventFrequency = 0.3f;
 
 	UPROPERTY(EditDefaultsOnly)
 	FLinearColor LiveryBlueColor;
@@ -170,7 +193,14 @@ private:
 
 	int32 VehicleSpeed = 0;
 	TArray<TObjectPtr<UStaticMeshComponent>> LiveryMeshes;
+	TArray<TObjectPtr<UImpactPoint>> ImpactPoints;
+	
+	float LastHitTime = 0.f;
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	void UpdateSpeed();
 	void SetLiveryColor(const FLinearColor Color);
+	TObjectPtr<UImpactPoint> FindClosestImpactPointToLocation (const FVector& Location);
 };
