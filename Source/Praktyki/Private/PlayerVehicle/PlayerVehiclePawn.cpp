@@ -135,6 +135,7 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 	ImpactPointLeftFront->BodyMeshesImpacted.Add(FenderLeftMeshComponent);
 	ImpactPointLeftFront->BodyMeshesImpacted.Add(FrontBumperMeshComponent);
 	ImpactPointLeftFront->BodyMeshesImpacted.Add(LeftMirrorMeshComponent);
+	ImpactPointLeftFront->BodyMeshesImpacted.Add(WindshieldMeshComponent);
 	ImpactPoints.Add(ImpactPointLeftFront);
 
 	ImpactPointLeftRear = CreateDefaultSubobject<UImpactPoint>("ImpactPointLeftRear");
@@ -149,6 +150,7 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 	ImpactPointRightFront->BodyMeshesImpacted.Add(FenderRightMeshComponent);
 	ImpactPointRightFront->BodyMeshesImpacted.Add(FrontBumperMeshComponent);
 	ImpactPointRightFront->BodyMeshesImpacted.Add(RightMirrorMeshComponent);
+	ImpactPointRightFront->BodyMeshesImpacted.Add(WindshieldMeshComponent);
 	ImpactPoints.Add(ImpactPointRightFront);
 
 	ImpactPointRightRear = CreateDefaultSubobject<UImpactPoint>("ImpactPointRightRear");
@@ -161,6 +163,7 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 	ImpactPointFront->SetupAttachment(GetMesh());
 	ImpactPointFront->BodyMeshesImpacted.Add(FrontBumperMeshComponent);
 	ImpactPointFront->BodyMeshesImpacted.Add(HoodMeshComponent);
+	ImpactPointFront->BodyMeshesImpacted.Add(WindshieldMeshComponent);
 	ImpactPoints.Add(ImpactPointFront);
 
 	ImpactPointRear = CreateDefaultSubobject<UImpactPoint>("ImpactPointRear");
@@ -233,7 +236,7 @@ void APlayerVehiclePawn::UpdateSteeringWheelPosition() const
 			if (MovementComponent->Wheels[0]->GetSteerAngle() < 0) SteeringAngle = MovementComponent->Wheels[0]->GetSteerAngle();
 			else SteeringAngle = MovementComponent->Wheels[1]->GetSteerAngle();
 			FRotator NewRotation;
-			NewRotation.Roll = SteeringAngle;
+			NewRotation.Roll = SteeringAngle * 2;
 			NewRotation.Pitch = SteeringWheelMeshComponent->GetRelativeRotation().Pitch;
 			NewRotation.Yaw = SteeringWheelMeshComponent->GetRelativeRotation().Yaw;
 			SteeringWheelMeshComponent->SetRelativeRotation(NewRotation);
@@ -251,7 +254,7 @@ void APlayerVehiclePawn::RecenterWheel() const
 			if (MovementComponent->Wheels[0]->GetSteerAngle() < 0) SteeringAngle = MovementComponent->Wheels[0]->GetSteerAngle();
 			else SteeringAngle = MovementComponent->Wheels[1]->GetSteerAngle();
 			FRotator NewRotation;
-			NewRotation.Roll = SteeringAngle;
+			NewRotation.Roll = SteeringAngle * 2;
 			NewRotation.Pitch = SteeringWheelMeshComponent->GetRelativeRotation().Pitch;
 			NewRotation.Yaw = SteeringWheelMeshComponent->GetRelativeRotation().Yaw;
 			SteeringWheelMeshComponent->SetRelativeRotation(NewRotation);
@@ -367,6 +370,30 @@ TObjectPtr<UImpactPoint> APlayerVehiclePawn::FindClosestImpactPointToLocation(co
 	return ClosestImpactPoint;
 }
 
+void APlayerVehiclePawn::ApplyCosmeticDamage(UImpactPoint* ImpactPoint, const float Percent)
+{
+	for (UStaticMeshComponent* MeshToDamage : ImpactPoint->BodyMeshesImpacted)
+	{
+		for (int32 i = 0; i < MeshToDamage->GetNumMaterials(); i++)
+		{
+			if (!MeshToDamage->GetMaterial(i)->IsA(UMaterialInstanceDynamic::StaticClass()))
+			{
+				UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(MeshToDamage->GetMaterial(i), this);
+				MeshToDamage->SetMaterial(i, DynamicMaterial);
+				float CurrentDamagePercent;
+				DynamicMaterial->GetScalarParameterValue(TEXT("DamageValue"), CurrentDamagePercent);
+				DynamicMaterial->SetScalarParameterValue(TEXT("DamageValue"), FMath::Min(1.f, Percent + CurrentDamagePercent));
+			}
+			else
+			{
+				float CurrentDamagePercent;
+				MeshToDamage->GetMaterial(i)->GetScalarParameterValue(TEXT("DamageValue"), CurrentDamagePercent);
+				Cast<UMaterialInstanceDynamic>(MeshToDamage->GetMaterial(i))->SetScalarParameterValue(TEXT("DamageValue"), FMath::Min(1.f, Percent + CurrentDamagePercent));
+			}
+		}
+	}
+}
+
 void APlayerVehiclePawn::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	const float ImpactForce = NormalImpulse.Size();
@@ -374,12 +401,13 @@ void APlayerVehiclePawn::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 
 	if (Time - LastHitTime < CollisionEventFrequency || ImpactForce < 400000.f) return;
 	LastHitTime = Time;
-		
-	UE_LOG(LogTemp, Warning, TEXT("Impact Force: %f"), ImpactForce);
+	
 
 	UImpactPoint* ClosestImpactPoint = FindClosestImpactPointToLocation(Hit.Location);
 
-	UE_LOG(LogTemp, Warning, TEXT("Impact Point: %s"), *ClosestImpactPoint->GetName());
+	float DamagePercent = ImpactForce / 5000000 * DamageScaling;
+	VehicleDamagePercentage += DamagePercent;
+	ApplyCosmeticDamage(ClosestImpactPoint, DamagePercent);
 
-	DrawDebugSphere(GetWorld(), Hit.Location, 20, 6, FColor::Red, true, 5.0f);
+	UE_LOG(LogTemp, Warning, TEXT("Damage Percentage: %f"), VehicleDamagePercentage);
 }

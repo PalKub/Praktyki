@@ -183,6 +183,9 @@ private:
 	float CollisionEventFrequency = 0.3f;
 
 	UPROPERTY(EditDefaultsOnly)
+	float DamageScaling = 1.f;
+
+	UPROPERTY(EditDefaultsOnly)
 	FLinearColor LiveryBlueColor;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -191,6 +194,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	FLinearColor LiveryRedColor;
 
+	float VehicleDamagePercentage = 0.f;
 	int32 VehicleSpeed = 0;
 	TArray<TObjectPtr<UStaticMeshComponent>> LiveryMeshes;
 	TArray<TObjectPtr<UImpactPoint>> ImpactPoints;
@@ -203,4 +207,5 @@ private:
 	void UpdateSpeed();
 	void SetLiveryColor(const FLinearColor Color);
 	TObjectPtr<UImpactPoint> FindClosestImpactPointToLocation (const FVector& Location);
+	void ApplyCosmeticDamage(UImpactPoint* ImpactPoint, const float Percent);
 };
