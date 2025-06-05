@@ -41,7 +41,7 @@ void APraktykiPlayerState::StartFinishTriggered()
 			bRaceTimeMeasuringActive = false;
 			bSectorThreeTriggered = false;
 			bStartFinishTriggered = true;
-			if (GhostPawn) GhostPawn->Destroy();
+			if (GhostPawn && !GhostPawn->IsPendingKillPending()) GhostPawn->Destroy();
 			StopRaceTimer();
 		}
 
@@ -168,6 +168,7 @@ void APraktykiPlayerState::StopRaceTimer()
 		BestLapSectorOne = CurrentSectorOneTime;
 		BestLapSectorTwo = CurrentSectorTwoTime;
 		BestLapSectorThree = CurrentSectorThreeTime;
+		if (BestDistanceAtLapTime) BestDistanceAtLapTime->FloatCurve.Reset();
 		BestDistanceAtLapTime = CurrentDistanceAtLapTime;
 		BestLapTimeAtDistance = CurrentLapTimeAtDistance;
 		BestLapTransformAtLapTime = FTransformCurve();
