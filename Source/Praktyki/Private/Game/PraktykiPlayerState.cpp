@@ -152,7 +152,6 @@ void APraktykiPlayerState::StopRaceTimer()
 	GetWorldTimerManager().ClearTimer(RaceTimer);
 	PopulateLapInfoData();
 	CurrentSectorThreeTime = LapTimeElapsed - CurrentSectorOneTime - CurrentSectorTwoTime;
-	CurrentDistanceAtLapTime->FloatCurve.AddKey(GameInstance->GetSpectatorCameraSpline()->GetSplineLength(), LapTimeElapsed);
 
 	FLapInfo CurrentLapInfo;
 	CurrentLapInfo.LapTime = LapTimeElapsed;
