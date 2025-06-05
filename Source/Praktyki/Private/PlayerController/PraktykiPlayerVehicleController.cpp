@@ -23,52 +23,37 @@ TObjectPtr<AGhostActor> APraktykiPlayerVehicleController::SpawnGhost(const FVect
 
 void APraktykiPlayerVehicleController::StartPracticeMode()
 {
-	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
-	{
-		if (APawn* CurrentPawn = GetPawn())
-		{
-			UnPossess();
-			CurrentPawn->Destroy();
-		}
-		APlayerVehiclePawn* NewPawn = GetWorld()->SpawnActor<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
-		Possess(NewPawn);
-		
-		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
-		{
-			HUD->OpenRacingHUDWidget();
-		}
-
-		if (APraktykiPlayerState* PraktykiPlayerState = Cast<APraktykiPlayerState>(PlayerState))
-		{
-			PraktykiPlayerState->ResetData();
-			PraktykiPlayerState->SetTimeLimit(0);
-			PraktykiPlayerState->SetShouldShowGhost(false);
-		}
-	}
+	StartRaceMode(0, false, ELiveryColor::ELC_Default);
 }
 
-void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor)
+void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor, EDamageMode DamageMode)
 {
-	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
+	if (const AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
 	{
 		if (APawn* CurrentPawn = GetPawn())
 		{
 			UnPossess();
 			CurrentPawn->Destroy();
 		}
-		APlayerVehiclePawn* NewPawn = GetWorld()->SpawnActorDeferred<APlayerVehiclePawn>(PlayerVehicleClass, PlayerStart->GetActorTransform());
+		FTransform SpawnPointTransform;
+		SpawnPointTransform.SetLocation(FVector(PlayerStart->GetActorLocation().X, PlayerStart->GetActorLocation().Y, 3.f));
+		SpawnPointTransform.SetRotation(PlayerStart->GetActorTransform().GetRotation());
+		APlayerVehiclePawn* NewPawn = GetWorld()->SpawnActorDeferred<APlayerVehiclePawn>(PlayerVehicleClass, SpawnPointTransform, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn);
 		NewPawn->SetLivery(LiveryColor);
-		NewPawn->FinishSpawning(PlayerStart->GetActorTransform());
+		NewPawn->FinishSpawning(SpawnPointTransform);
+		
+		Possess(NewPawn);
 
 		if (APraktykiPlayerState* PraktykiPlayerState = Cast<APraktykiPlayerState>(PlayerState))
 		{
 			PraktykiPlayerState->ResetData();
 			PraktykiPlayerState->SetTimeLimit(TimeLimit);
-			PraktykiPlayerState->InitializeTimeLimit();
+			PraktykiPlayerState->SetDamageMode(DamageMode);
+			if (TimeLimit != 0) PraktykiPlayerState->InitializeTimeLimit();
 			PraktykiPlayerState->SetShouldShowGhost(bShowGhost);
+			NewPawn->SetPlayerState(PraktykiPlayerState);
 		}
-
-		Possess(NewPawn);
+		
 		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
 		{
 			HUD->OpenRacingHUDWidget();

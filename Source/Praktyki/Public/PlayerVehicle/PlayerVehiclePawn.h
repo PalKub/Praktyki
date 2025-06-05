@@ -6,6 +6,7 @@
 #include "WheeledVehiclePawn.h"
 #include "PlayerVehiclePawn.generated.h"
 
+class APraktykiPlayerState;
 class APraktykiPlayerVehicleController;
 class UChaosWheeledVehicleMovementComponent;
 class UImpactPoint;
@@ -22,6 +23,14 @@ enum class ELiveryColor : uint8
 	ELC_Blue UMETA(DisplayName = "Blue"),
 	ELC_Orange UMETA(DisplayName = "Orange"),
 	ELC_Red UMETA(DisplayName = "Red")
+};
+
+UENUM(BlueprintType)
+enum class EDamageMode : uint8
+{
+	EDM_NoDamage UMETA(DisplayName = "NoDamage"),
+	EDM_Cosmetic UMETA(DisplayName = "Cosmetic"),
+	EDM_Mechanical UMETA(DisplayName = "Mechanical")
 };
 
 UENUM(BlueprintType)
@@ -65,6 +74,7 @@ public:
 	void SetCamera(const ECameraPosition CameraPosition) const;
 	void UpdateSteeringWheelPosition() const;
 	void RecenterWheel() const;
+	void SetPlayerState(APraktykiPlayerState* NewPlayerState) { PlayerState = NewPlayerState; }
 
 protected:
 	virtual void PossessedBy(AController* NewController) override;
@@ -219,6 +229,7 @@ private:
 	TArray<TObjectPtr<UImpactPoint>> ImpactPoints;
 	TObjectPtr<UChaosWheeledVehicleMovementComponent> WheeledMovementComponent;
 	TObjectPtr<APraktykiPlayerVehicleController> PlayerVehicleController;
+	TObjectPtr<APraktykiPlayerState> PlayerState;
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

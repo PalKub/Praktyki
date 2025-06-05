@@ -139,6 +139,7 @@ void APraktykiPlayerState::ResetData()
 	BestLapTransformAtLapTime.RotationCurve.FloatCurves->Reset();
 	BestLapTransformAtLapTime.TranslationCurve.FloatCurves->Reset();
 	BestLapTransformAtLapTime.ScaleCurve.FloatCurves->Reset();
+	DamageMode = EDamageMode::EDM_NoDamage;
 }
 
 void APraktykiPlayerState::StartRaceTimer()
@@ -190,7 +191,7 @@ void APraktykiPlayerState::PopulateLapInfoData()
 	const FVector& ClosestLocationOnTheTrackSpline = GameInstance->GetSpectatorCameraSpline()->FindLocationClosestToWorldLocation(GetPawn()->GetActorLocation(), ESplineCoordinateSpace::World);
 	const float DistanceAlongTrackSpline = GameInstance->GetSpectatorCameraSpline()->GetDistanceAlongSplineAtLocation(ClosestLocationOnTheTrackSpline, ESplineCoordinateSpace::World);
 	
-	if (PreviousDistance < DistanceAlongTrackSpline)
+	if (PreviousDistance < DistanceAlongTrackSpline || (PreviousDistance > GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.95f && DistanceAlongTrackSpline < GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.05f))
 	{
 		CurrentDistanceAtLapTime->FloatCurve.AddKey(DistanceAlongTrackSpline, LapTimeElapsed);
 		PreviousDistance = DistanceAlongTrackSpline;

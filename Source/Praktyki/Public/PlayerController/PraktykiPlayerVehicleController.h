@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
+#include "PlayerVehicle/PlayerVehiclePawn.h"
 #include "PraktykiPlayerVehicleController.generated.h"
 
+enum class EDamageMode : uint8;
 class AGhostActor;
 enum class ELiveryColor : uint8;
 class APlayerVehiclePawn;
@@ -32,7 +34,7 @@ protected:
 	void StartPracticeMode();
 
 	UFUNCTION(BlueprintCallable)
-	void StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor);
+	void StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor, EDamageMode DamageMode = EDamageMode::EDM_NoDamage);
 	
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

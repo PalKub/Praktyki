@@ -7,6 +7,7 @@
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ImpactPoint.h"
+#include "Game/PraktykiPlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "PlayerController/PraktykiPlayerVehicleController.h"
 
@@ -435,15 +436,20 @@ void APlayerVehiclePawn::ApplyMechanicalDamage(const float Percent)
 
 void APlayerVehiclePawn::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	const float ImpactForce = NormalImpulse.Size();
-	const float Time = GetWorld()->GetTimeSeconds();
+	if (PlayerState)
+	{
+		if (PlayerState->GetDamageMode() == EDamageMode::EDM_NoDamage) return;
+		
+		const float ImpactForce = NormalImpulse.Size();
+		const float Time = GetWorld()->GetTimeSeconds();
 
-	if (Time - LastHitTime < CollisionEventFrequency || ImpactForce < 400000.f) return;
+		if (Time - LastHitTime < CollisionEventFrequency || ImpactForce < 400000.f) return;
 
-	LastHitTime = Time;
-	UImpactPoint* ClosestImpactPoint = FindClosestImpactPointToLocation(Hit.Location);
-	const float DamagePercent = ImpactForce / 5000000 * DamageScaling;
+		LastHitTime = Time;
+		UImpactPoint* ClosestImpactPoint = FindClosestImpactPointToLocation(Hit.Location);
+		const float DamagePercent = ImpactForce / 5000000 * DamageScaling;
 	
-	ApplyCosmeticDamage(ClosestImpactPoint, DamagePercent);
-	ApplyMechanicalDamage(DamagePercent);
+		ApplyCosmeticDamage(ClosestImpactPoint, DamagePercent);
+		if (PlayerState->GetDamageMode() == EDamageMode::EDM_Mechanical) ApplyMechanicalDamage(DamagePercent);
+	}
 }

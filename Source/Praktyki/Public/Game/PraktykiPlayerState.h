@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "PlayerController/PraktykiPlayerVehicleController.h"
 #include "PraktykiPlayerState.generated.h"
 
+enum class EDamageMode : uint8;
 class AGhostActor;
 class APlayerVehiclePawn;
 class UCurveVector;
@@ -72,6 +74,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetNumberOfLapsCompleted() const { return LapsInfoArray.Num(); }
 
+	UFUNCTION(BlueprintCallable)
+	EDamageMode GetDamageMode() const { return DamageMode; }
+
 	TObjectPtr<AGhostActor> GetGhostActor() { return GhostPawn; }
 	void StartFinishTriggered();
 	void SectorTwoTriggered();
@@ -81,6 +86,7 @@ public:
 	void InitializeTimeLimit();
 	void ResetData();
 	void InvalidateLap() { bIsValidLap = false; }
+	void SetDamageMode(const EDamageMode NewDamageMode) { DamageMode = NewDamageMode; }
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -100,7 +106,8 @@ private:
 
 	UPROPERTY()
 	TArray<FLapInfo> LapsInfoArray = TArray<FLapInfo>();
-
+	
+	EDamageMode DamageMode = EDamageMode::EDM_NoDamage;
 	FTransformCurve CurrentLapTransformAtLapTime;
 	FTransformCurve BestLapTransformAtLapTime;
 	TObjectPtr<AGhostActor> GhostPawn = nullptr;
