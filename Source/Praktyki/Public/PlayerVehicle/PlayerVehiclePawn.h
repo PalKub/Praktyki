@@ -52,6 +52,7 @@ enum class ECameraPosition : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpeedChangedSignature, int32, Speed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamageLevelChangedSignature, EDamageLevel, DamageLevel);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCooldownTimeChangedSignature, int32, TimeRemaining);
 
 UCLASS()
 class PRAKTYKI_API APlayerVehiclePawn : public AWheeledVehiclePawn
@@ -67,6 +68,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDamageLevelChangedSignature OnDamageLevelChangedDelegate;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnCooldownTimeChangedSignature OnCooldownTimeChangedDelegate;
+
 	FTimerHandle UpdateSpeedTimer;
 
 	void SetCameraRotation(const FVector2D NewRotation);
@@ -75,6 +79,7 @@ public:
 	void UpdateSteeringWheelPosition() const;
 	void RecenterWheel() const;
 	void SetPlayerState(APraktykiPlayerState* NewPlayerState) { PlayerState = NewPlayerState; }
+	void TeleportToTrack();
 
 protected:
 	virtual void PossessedBy(AController* NewController) override;
@@ -221,9 +226,14 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	FLinearColor LiveryRedColor;
 
+	UPROPERTY(EditDefaultsOnly)
+	int32 ResetToTrackCooldownTime = 3;
+
 	float VehicleDamagePercentage = 0.f;
 	int32 VehicleSpeed = 0;
 	float LastHitTime = 0.f;
+	int32 CooldownTimeRemaining = 0.f;
+	FTimerHandle CooldownTimer;
 	EDamageLevel CurrentDamageLevel = EDamageLevel::EDL_None;
 	TArray<TObjectPtr<UStaticMeshComponent>> LiveryMeshes;
 	TArray<TObjectPtr<UImpactPoint>> ImpactPoints;
@@ -239,4 +249,5 @@ private:
 	TObjectPtr<UImpactPoint> FindClosestImpactPointToLocation (const FVector& Location);
 	void ApplyCosmeticDamage(UImpactPoint* ImpactPoint, const float Percent);
 	void ApplyMechanicalDamage(const float Percent);
+	void CountDownCooldownTime();
 };

@@ -84,6 +84,7 @@ void APraktykiPlayerVehicleController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Completed, this, &APraktykiPlayerVehicleController::StopTurning);
 	EnhancedInputComponent->BindAction(RotateCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::RotateCamera);
 	EnhancedInputComponent->BindAction(ChangeCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::ChangeCamera);
+	EnhancedInputComponent->BindAction(ResetPositionAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::ResetCarPositionToTrack);
 }
 
 void APraktykiPlayerVehicleController::RaceTimeEnded()
@@ -163,5 +164,13 @@ void APraktykiPlayerVehicleController::ChangeCamera()
 			bCameraSetToInside = true;
 			PlayerVehicle->SetCamera(ECameraPosition::ECP_Inside);
 		}
+	}
+}
+
+void APraktykiPlayerVehicleController::ResetCarPositionToTrack()
+{
+	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
+	{
+		PlayerVehicle->TeleportToTrack();
 	}
 }

@@ -7,6 +7,8 @@
 #include "ChaosWheeledVehicleMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ImpactPoint.h"
+#include "Components/SplineComponent.h"
+#include "Game/PraktykiGameInstance.h"
 #include "Game/PraktykiPlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "PlayerController/PraktykiPlayerVehicleController.h"
@@ -270,6 +272,23 @@ void APlayerVehiclePawn::RecenterWheel() const
 	}
 }
 
+void APlayerVehiclePawn::TeleportToTrack()
+{
+	if (CooldownTimeRemaining == 0)
+	{
+		if(UPraktykiGameInstance* GameInstance = Cast<UPraktykiGameInstance>(GetGameInstance()))
+		{
+			const USplineComponent* TrackSpline = GameInstance->GetSpectatorCameraSpline();
+			const FTransform Transform = TrackSpline->FindTransformClosestToWorldLocation(GetActorLocation(), ESplineCoordinateSpace::World);
+			const FVector NewPawnLocation = FVector(Transform.GetLocation().X, Transform.GetLocation().Y, Transform.GetLocation().Z - 67.f);
+			GetMesh()->SetSimulatePhysics(false);
+			TeleportTo(NewPawnLocation, Transform.Rotator(), true, true);
+			CooldownTimeRemaining = ResetToTrackCooldownTime;
+			GetWorldTimerManager().SetTimer(CooldownTimer, this, &APlayerVehiclePawn::CountDownCooldownTime, 1.f, true, 0.f);
+		}
+	}
+}
+
 void APlayerVehiclePawn::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -431,6 +450,21 @@ void APlayerVehiclePawn::ApplyMechanicalDamage(const float Percent)
 			CurrentDamageLevel = DamageLevel;
 			OnDamageLevelChangedDelegate.Broadcast(CurrentDamageLevel);
 		}
+	}
+}
+
+void APlayerVehiclePawn::CountDownCooldownTime()
+{
+	OnCooldownTimeChangedDelegate.Broadcast(CooldownTimeRemaining);
+	CooldownTimeRemaining -= 1;
+
+	if (CooldownTimeRemaining <= -1)
+	{
+		GetWorldTimerManager().ClearTimer(CooldownTimer);
+		GetMesh()->SetSimulatePhysics(true);
+		GetVehicleMovementComponent()->RecreatePhysicsState();
+		GetVehicleMovementComponent()->ResetVehicle();
+		CooldownTimeRemaining = 0;
 	}
 }
 
