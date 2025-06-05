@@ -26,6 +26,25 @@ void APraktykiPlayerVehicleController::StartPracticeMode()
 	StartRaceMode(0, false, ELiveryColor::ELC_Default);
 }
 
+void APraktykiPlayerVehicleController::QuitToMainMenu()
+{
+	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
+	{
+		if (APawn* CurrentPawn = GetPawn())
+		{
+			UnPossess();
+			CurrentPawn->Destroy();
+		}
+		APraktykiSpectatorCamera* NewPawn = GetWorld()->SpawnActor<APraktykiSpectatorCamera>(GetWorld()->GetAuthGameMode()->GetDefaultPawnClassForController(this), PlayerStart->GetActorTransform());
+		Possess(NewPawn);
+		
+		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
+		{
+			HUD->OpenMainMenuWidget();
+		}
+	}
+}
+
 void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor, EDamageMode DamageMode)
 {
 	if (const AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
@@ -82,9 +101,9 @@ void APraktykiPlayerVehicleController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &APraktykiPlayerVehicleController::Brake);
 	EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::Turn);
 	EnhancedInputComponent->BindAction(TurnAction, ETriggerEvent::Completed, this, &APraktykiPlayerVehicleController::StopTurning);
-	EnhancedInputComponent->BindAction(RotateCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::RotateCamera);
 	EnhancedInputComponent->BindAction(ChangeCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::ChangeCamera);
 	EnhancedInputComponent->BindAction(ResetPositionAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::ResetCarPositionToTrack);
+	EnhancedInputComponent->BindAction(PauseGameAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::PauseGame);
 }
 
 void APraktykiPlayerVehicleController::RaceTimeEnded()
@@ -142,14 +161,6 @@ void APraktykiPlayerVehicleController::StopTurning(const FInputActionValue& Inpu
 	}
 }
 
-void APraktykiPlayerVehicleController::RotateCamera(const FInputActionValue& InputActionValue)
-{
-	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
-	{
-		PlayerVehicle->SetCameraRotation(InputActionValue.Get<FVector2D>());
-	}
-}
-
 void APraktykiPlayerVehicleController::ChangeCamera()
 {
 	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
@@ -172,5 +183,13 @@ void APraktykiPlayerVehicleController::ResetCarPositionToTrack()
 	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
 	{
 		PlayerVehicle->TeleportToTrack();
+	}
+}
+
+void APraktykiPlayerVehicleController::PauseGame()
+{
+	if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
+	{
+		HUD->OpenPauseGameWidget();
 	}
 }

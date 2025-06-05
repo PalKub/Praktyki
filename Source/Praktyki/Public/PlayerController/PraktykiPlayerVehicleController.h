@@ -34,6 +34,9 @@ protected:
 	void StartPracticeMode();
 
 	UFUNCTION(BlueprintCallable)
+	void QuitToMainMenu();
+
+	UFUNCTION(BlueprintCallable)
 	void StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor, EDamageMode DamageMode = EDamageMode::EDM_NoDamage);
 	
 	virtual void BeginPlay() override;
@@ -42,10 +45,7 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputMappingContext> PlayerContext;
-
-	UPROPERTY(EditDefaultsOnly)
-	TObjectPtr<UInputAction> RotateCameraAction;
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> AccelerateAction;
 
@@ -62,6 +62,9 @@ private:
 	TObjectPtr<UInputAction> ResetPositionAction;
 
 	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> PauseGameAction;
+
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APlayerVehiclePawn> PlayerVehicleClass;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -74,7 +77,7 @@ private:
 	void Brake(const FInputActionValue& InputActionValue);
 	void Turn(const FInputActionValue& InputActionValue);
 	void StopTurning(const FInputActionValue& InputActionValue);
-	void RotateCamera(const FInputActionValue& InputActionValue);
 	void ChangeCamera();
 	void ResetCarPositionToTrack();
+	void PauseGame();
 };
