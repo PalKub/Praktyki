@@ -41,7 +41,7 @@ void APraktykiPlayerState::StartFinishTriggered()
 			bRaceTimeMeasuringActive = false;
 			bSectorThreeTriggered = false;
 			bStartFinishTriggered = true;
-			if (GhostPawn && !GhostPawn->IsPendingKillPending()) GhostPawn->Destroy();
+			if (IsValid(GhostPawn)) GhostPawn->Destroy();
 			StopRaceTimer();
 		}
 
