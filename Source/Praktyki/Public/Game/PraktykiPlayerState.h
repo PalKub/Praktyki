@@ -135,6 +135,7 @@ private:
 	int32 TimeLimit = 0.f;
 	int32 TimeRemaining = 0.f;
 	bool bShowGhost = true;
+	float LapStartDistanceAlongSpline = 0.f;
 	
 	void StartRaceTimer();
 	void StopRaceTimer();

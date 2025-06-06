@@ -62,10 +62,7 @@ void APraktykiPlayerState::StartFinishTriggered()
 
 			const FVector& ClosestLocationOnTheTrackSpline = GameInstance->GetSpectatorCameraSpline()->FindLocationClosestToWorldLocation(GetPawn()->GetActorLocation(), ESplineCoordinateSpace::World);
 			const float DistanceAlongTrackSpline = GameInstance->GetSpectatorCameraSpline()->GetDistanceAlongSplineAtLocation(ClosestLocationOnTheTrackSpline, ESplineCoordinateSpace::World);
-			CurrentDistanceAtLapTime->FloatCurve.AddKey(DistanceAlongTrackSpline, 0.f);
-			CurrentLapTimeAtDistance->FloatCurve.AddKey(0.f, DistanceAlongTrackSpline);
-			CurrentLapTransformAtLapTime.UpdateOrAddKey(GetPawn()->GetActorTransform(), 0);
-			PreviousDistance = DistanceAlongTrackSpline;
+			LapStartDistanceAlongSpline = DistanceAlongTrackSpline;
 			
 			GetWorldTimerManager().SetTimer(RaceTimer, this, &APraktykiPlayerState::StartRaceTimer, RaceTimerTickFrequency, true);
 
@@ -132,6 +129,7 @@ void APraktykiPlayerState::ResetData()
 	bIsValidLap = true;
 	TimeLimit = 0.f;
 	TimeRemaining = 0.f;
+	LapStartDistanceAlongSpline = 0.f;
 	bShowGhost = true;
 	LapsInfoArray.Empty();
 	if (CurrentDistanceAtLapTime) CurrentDistanceAtLapTime->ResetCurve();
@@ -198,17 +196,15 @@ void APraktykiPlayerState::PopulateLapInfoData()
 	const FVector& ClosestLocationOnTheTrackSpline = GameInstance->GetSpectatorCameraSpline()->FindLocationClosestToWorldLocation(GetPawn()->GetActorLocation(), ESplineCoordinateSpace::World);
 	const float DistanceAlongTrackSpline = GameInstance->GetSpectatorCameraSpline()->GetDistanceAlongSplineAtLocation(ClosestLocationOnTheTrackSpline, ESplineCoordinateSpace::World);
 
-	if (CurrentDistanceAtLapTime->GetFloatValue(LapTimeElapsed) == 0)
+	if (PreviousDistance < DistanceAlongTrackSpline || (PreviousDistance > GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.95f && DistanceAlongTrackSpline < GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.05f))
 	{
-		if (PreviousDistance < DistanceAlongTrackSpline || (PreviousDistance > GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.95f && DistanceAlongTrackSpline < GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.05f))
-		{
-			CurrentDistanceAtLapTime->FloatCurve.AddKey(DistanceAlongTrackSpline, LapTimeElapsed);
-			PreviousDistance = DistanceAlongTrackSpline;
-			CurrentLapTimeAtDistance->FloatCurve.AddKey(LapTimeElapsed, DistanceAlongTrackSpline);
-		}
-
-		CurrentLapTransformAtLapTime.UpdateOrAddKey(GetPawn()->GetActorTransform(), LapTimeElapsed);
+		if (DistanceAlongTrackSpline <= GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.05f && DistanceAlongTrackSpline >= LapStartDistanceAlongSpline && bSectorTwoTriggered) return;
+		CurrentDistanceAtLapTime->FloatCurve.AddKey(DistanceAlongTrackSpline, LapTimeElapsed);
+		PreviousDistance = DistanceAlongTrackSpline;
+		CurrentLapTimeAtDistance->FloatCurve.AddKey(LapTimeElapsed, DistanceAlongTrackSpline);
 	}
+
+	CurrentLapTransformAtLapTime.UpdateOrAddKey(GetPawn()->GetActorTransform(), LapTimeElapsed);
 
 	if (BestLapTime > 0.f)
 	{
