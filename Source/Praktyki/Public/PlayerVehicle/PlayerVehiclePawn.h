@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "WheeledVehiclePawn.h"
+#include "Components/TimelineComponent.h"
 #include "PlayerVehiclePawn.generated.h"
 
+class UTimelineComponent;
 class APraktykiPlayerState;
 class APraktykiPlayerVehicleController;
 class UChaosWheeledVehicleMovementComponent;
@@ -231,7 +233,21 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float CameraRecenterDelay = 1.f;
-	
+
+	UPROPERTY(EditDefaultsOnly)
+	float CameraRecenterVelocityThreshold = 200.f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CameraAutoRecenterTime = 0.5f;
+
+	UPROPERTY()
+	TObjectPtr<UTimelineComponent> CameraRecenterTimeline;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> CameraRotationCurve;
+
+	FOnTimelineFloat CameraRotationProgressFunction;
+	FTransformCurve LapCurve;
 	float VehicleDamagePercentage = 0.f;
 	int32 VehicleSpeed = 0;
 	float LastHitTime = 0.f;
@@ -248,6 +264,9 @@ private:
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	UFUNCTION()
+	void UpdateCameraRotation(const float Rotation);
 
 	void UpdateSpeed();
 	void SetLiveryColor(const FLinearColor Color);

@@ -176,6 +176,8 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 	ImpactPointRear->BodyMeshesImpacted.Add(SpoilerMeshComponent);
 	ImpactPoints.Add(ImpactPointRear);
 
+	CameraRecenterTimeline = CreateDefaultSubobject<UTimelineComponent>("CameraRecenterTimeline");
+
 	Tags.Add("Player");
 }
 
@@ -183,7 +185,8 @@ void APlayerVehiclePawn::SetCameraRotation(const float NewRotation)
 {
 	SpringArm->AddRelativeRotation(FRotator(0.f, NewRotation, 0.f));
 	if (GetWorldTimerManager().IsTimerActive(RecenterCameraTimer)) GetWorldTimerManager().ClearTimer(RecenterCameraTimer);
-	GetWorldTimerManager().SetTimer(RecenterCameraTimer, this, &APlayerVehiclePawn::RecenterCamera, CameraRecenterDelay);
+	if (CameraRecenterTimeline && CameraRecenterTimeline->IsPlaying()) CameraRecenterTimeline->Stop();
+	if (GetVelocity().Size() > CameraRecenterVelocityThreshold) GetWorldTimerManager().SetTimer(RecenterCameraTimer, this, &APlayerVehiclePawn::RecenterCamera, CameraRecenterDelay);
 }
 
 void APlayerVehiclePawn::SetLivery(const ELiveryColor LiveryColor)
@@ -336,6 +339,11 @@ void APlayerVehiclePawn::Tick(float DeltaSeconds)
 			}
 		}
 	}
+
+	if (GetVelocity().Size() > CameraRecenterVelocityThreshold && SpringArm->GetRelativeRotation() != CameraDefaultRotation && !GetWorldTimerManager().IsTimerActive(RecenterCameraTimer))
+	{
+		GetWorldTimerManager().SetTimer(RecenterCameraTimer, this, &APlayerVehiclePawn::RecenterCamera, CameraRecenterDelay);
+	}
 }
 
 void APlayerVehiclePawn::BeginPlay()
@@ -346,6 +354,7 @@ void APlayerVehiclePawn::BeginPlay()
 	GetMesh()->OnComponentHit.AddDynamic(this, &APlayerVehiclePawn::OnHit);
 	WheeledMovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
 	CameraDefaultRotation = SpringArm->GetRelativeRotation();
+	CameraRotationProgressFunction.BindUFunction(this, FName("UpdateCameraRotation"));
 }
 
 void APlayerVehiclePawn::UpdateSpeed()
@@ -473,7 +482,12 @@ void APlayerVehiclePawn::CountDownCooldownTime()
 
 void APlayerVehiclePawn::RecenterCamera()
 {
-	SpringArm->SetRelativeRotation(CameraDefaultRotation);
+	if (!CameraRotationCurve) CameraRotationCurve = NewObject<UCurveFloat>();
+	else CameraRotationCurve->ResetCurve();
+	CameraRotationCurve->FloatCurve.AddKey(0.f, SpringArm->GetRelativeRotation().Yaw);
+	CameraRotationCurve->FloatCurve.AddKey(CameraAutoRecenterTime, CameraDefaultRotation.Yaw);
+	CameraRecenterTimeline->AddInterpFloat(CameraRotationCurve, CameraRotationProgressFunction);
+	CameraRecenterTimeline->PlayFromStart();
 }
 
 void APlayerVehiclePawn::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -494,4 +508,9 @@ void APlayerVehiclePawn::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherA
 		ApplyCosmeticDamage(ClosestImpactPoint, DamagePercent);
 		if (PlayerState->GetDamageMode() == EDamageMode::EDM_Mechanical) ApplyMechanicalDamage(DamagePercent);
 	}
+}
+
+void APlayerVehiclePawn::UpdateCameraRotation(const float Rotation)
+{
+	SpringArm->SetRelativeRotation(FRotator(CameraDefaultRotation.Pitch, Rotation, CameraDefaultRotation.Roll));
 }
