@@ -196,8 +196,10 @@ void APraktykiPlayerState::PopulateLapInfoData()
 	const FVector& ClosestLocationOnTheTrackSpline = GameInstance->GetSpectatorCameraSpline()->FindLocationClosestToWorldLocation(GetPawn()->GetActorLocation(), ESplineCoordinateSpace::World);
 	const float DistanceAlongTrackSpline = GameInstance->GetSpectatorCameraSpline()->GetDistanceAlongSplineAtLocation(ClosestLocationOnTheTrackSpline, ESplineCoordinateSpace::World);
 
+	//Assuring curve points are not added when car goes backwards on the track
 	if (PreviousDistance < DistanceAlongTrackSpline || (PreviousDistance > GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.95f && DistanceAlongTrackSpline < GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.05f))
 	{
+		//Assuring curve points are added correctly at the end/beginning spline overlap point
 		if (DistanceAlongTrackSpline <= GameInstance->GetSpectatorCameraSpline()->GetSplineLength() * 0.05f && DistanceAlongTrackSpline >= LapStartDistanceAlongSpline && bSectorTwoTriggered) return;
 		CurrentDistanceAtLapTime->FloatCurve.AddKey(DistanceAlongTrackSpline, LapTimeElapsed);
 		PreviousDistance = DistanceAlongTrackSpline;

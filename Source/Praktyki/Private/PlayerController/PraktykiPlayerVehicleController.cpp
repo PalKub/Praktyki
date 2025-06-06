@@ -158,7 +158,7 @@ void APraktykiPlayerVehicleController::StopTurning(const FInputActionValue& Inpu
 	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
 	{
 		PlayerVehicle->GetVehicleMovement()->SetSteeringInput(InputActionValue.Get<float>());
-		GetWorldTimerManager().SetTimer(ResetWheelRotationTimer, PlayerVehicle, &APlayerVehiclePawn::RecenterWheel, 0.05, true);
+		GetWorldTimerManager().SetTimer(ResetWheelRotationTimer, PlayerVehicle, &APlayerVehiclePawn::RecenterWheel, 0.016f, true);
 	}
 }
 

@@ -74,7 +74,7 @@ public:
 	FOnCooldownTimeChangedSignature OnCooldownTimeChangedDelegate;
 
 	FTimerHandle UpdateSpeedTimer;
-
+	
 	void SetCameraRotation(const float NewRotation);
 	void SetLivery(const ELiveryColor LiveryColor);
 	void SetCamera(const ECameraPosition CameraPosition) const;
@@ -90,6 +90,7 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
+	/** Body Meshes */
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> InteriorMeshComponent;
 
@@ -185,13 +186,17 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> SteeringWheelMeshComponent;
+	/** end Body Meshes */
 
+	/** Camera */
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UCameraComponent> Camera;
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USpringArmComponent> SpringArm;
+	/** end Camera */
 
+	/** Impact Points */
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UImpactPoint> ImpactPointLeftFront;
 
@@ -209,43 +214,48 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UImpactPoint> ImpactPointRear;
+	/** end Impact Points */
 
-	UPROPERTY(EditDefaultsOnly)
+	
+	/** Vehicle Settings */
+	UPROPERTY(EditDefaultsOnly, Category = "General Settings")
 	float UpdateSpeedFrequency = 0.1f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "General Settings")
 	float CollisionEventFrequency = 0.3f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "General Settings")
 	float DamageScaling = 1.f;
 
-	UPROPERTY(EditDefaultsOnly)
-	FLinearColor LiveryBlueColor;
-
-	UPROPERTY(EditDefaultsOnly)
-	FLinearColor LiveryOrangeColor;
-
-	UPROPERTY(EditDefaultsOnly)
-	FLinearColor LiveryRedColor;
-
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "General Settings")
 	int32 ResetToTrackCooldownTime = 3;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Livery")
+	FLinearColor LiveryBlueColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Livery")
+	FLinearColor LiveryOrangeColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Livery")
+	FLinearColor LiveryRedColor;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera Settings")
 	float CameraRecenterDelay = 1.f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Camera Settings")
 	float CameraRecenterVelocityThreshold = 200.f;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Camera Settings")
 	float CameraAutoRecenterTime = 0.5f;
-
+	/** end Vehicle Settings */
+	
 	UPROPERTY()
 	TObjectPtr<UTimelineComponent> CameraRecenterTimeline;
 
 	UPROPERTY()
 	TObjectPtr<UCurveFloat> CameraRotationCurve;
 
+	/** Lap Specific Data */
 	FOnTimelineFloat CameraRotationProgressFunction;
 	FTransformCurve LapCurve;
 	float VehicleDamagePercentage = 0.f;
@@ -261,6 +271,7 @@ private:
 	TObjectPtr<APraktykiPlayerVehicleController> PlayerVehicleController;
 	TObjectPtr<APraktykiPlayerState> PlayerState;
 	FRotator CameraDefaultRotation = FRotator();
+	/** end Lap Specific Data */
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

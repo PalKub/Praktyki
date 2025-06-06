@@ -43,9 +43,11 @@ protected:
 	virtual void SetupInputComponent() override;
 
 private:
+	//Input Context
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputMappingContext> PlayerContext;
-	
+
+	/** Input Actions */
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> AccelerateAction;
 
@@ -66,6 +68,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UInputAction> RotateCameraAction;
+	/** end Input Actions */
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APlayerVehiclePawn> PlayerVehicleClass;
@@ -76,6 +79,7 @@ private:
 	bool bCameraSetToInside = false;
 	float ThrottleMultiplier = 1.f;
 
+	/** Input bound functions */
 	void Accelerate(const FInputActionValue& InputActionValue);
 	void Brake(const FInputActionValue& InputActionValue);
 	void Turn(const FInputActionValue& InputActionValue);
@@ -84,4 +88,5 @@ private:
 	void ResetCarPositionToTrack();
 	void PauseGame();
 	void RotateCamera(const FInputActionValue& InputActionValue);
+	/** end Input bound functions */
 };

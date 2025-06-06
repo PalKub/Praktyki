@@ -53,6 +53,7 @@ class PRAKTYKI_API APraktykiPlayerState : public APlayerState
 	GENERATED_BODY()
 
 public:
+	//** UI assigned delegates */
 	UPROPERTY(BlueprintAssignable)
 	FOnTimeRemainingChangedSignature OnTimeRemainingChangedDelegate;
 	
@@ -64,7 +65,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnLapCompletedSignature OnLapTimeCompletedDelegate;
+	//** end UI assigned delegates */
 
+	//** UI callable functions */
 	UFUNCTION(BlueprintCallable)
 	FLapInfo GetBestLapInfo();
 
@@ -76,6 +79,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	EDamageMode GetDamageMode() const { return DamageMode; }
+	//** end UI callable functions */
 
 	TObjectPtr<AGhostActor> GetGhostActor() { return GhostPawn; }
 	void StartFinishTriggered();
@@ -108,10 +112,12 @@ private:
 	TArray<FLapInfo> LapsInfoArray = TArray<FLapInfo>();
 	
 	EDamageMode DamageMode = EDamageMode::EDM_NoDamage;
-	FTransformCurve CurrentLapTransformAtLapTime;
-	FTransformCurve BestLapTransformAtLapTime;
 	TObjectPtr<AGhostActor> GhostPawn = nullptr;
 	TObjectPtr<UPraktykiGameInstance> GameInstance = nullptr;
+
+	/** Lap data */
+	FTransformCurve CurrentLapTransformAtLapTime;
+	FTransformCurve BestLapTransformAtLapTime;
 	FTimerHandle RaceTimer;
 	FTimerHandle TimeRemainingTimer;
 	float GameTimeAtLapStart = 0.f;
@@ -136,6 +142,7 @@ private:
 	int32 TimeRemaining = 0.f;
 	bool bShowGhost = true;
 	float LapStartDistanceAlongSpline = 0.f;
+	/** end Lap data */
 	
 	void StartRaceTimer();
 	void StopRaceTimer();

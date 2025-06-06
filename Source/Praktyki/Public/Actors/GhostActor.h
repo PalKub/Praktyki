@@ -23,6 +23,7 @@ protected:
 	virtual void Destroyed() override;
 	
 private:
+	/** Body Meshes */
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<USkeletalMeshComponent> MainMesh;
 	
@@ -79,10 +80,13 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UStaticMeshComponent> RightMirrorMeshComponent;
+	/** end Body Meshes */
 
+	//Material
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMaterialInstance> GhostCarMaterial;
 
+	/** Transform update Timeline Data */
 	UPROPERTY()
 	TObjectPtr<UTimelineComponent> TransformTimeline;
 
@@ -91,10 +95,11 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UCurveFloat> LapTimeToDistance;
-
+	
 	FOnTimelineFloat ProgressFunction;
 	FOnTimelineEvent FinishedFunction;
 	FTransformCurve LapCurve;
+	/** end Transform update Timeline Data */
 
 	UFUNCTION()
 	void UpdateTimeline(const float Distance);
