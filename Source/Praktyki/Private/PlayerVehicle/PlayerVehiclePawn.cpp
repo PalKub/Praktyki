@@ -179,9 +179,11 @@ APlayerVehiclePawn::APlayerVehiclePawn()
 	Tags.Add("Player");
 }
 
-void APlayerVehiclePawn::SetCameraRotation(const FVector2D NewRotation)
+void APlayerVehiclePawn::SetCameraRotation(const float NewRotation)
 {
-	SpringArm->AddRelativeRotation(FRotator(NewRotation.Y, NewRotation.X, 0.f));
+	SpringArm->AddRelativeRotation(FRotator(0.f, NewRotation, 0.f));
+	if (GetWorldTimerManager().IsTimerActive(RecenterCameraTimer)) GetWorldTimerManager().ClearTimer(RecenterCameraTimer);
+	GetWorldTimerManager().SetTimer(RecenterCameraTimer, this, &APlayerVehiclePawn::RecenterCamera, CameraRecenterDelay);
 }
 
 void APlayerVehiclePawn::SetLivery(const ELiveryColor LiveryColor)
@@ -343,6 +345,7 @@ void APlayerVehiclePawn::BeginPlay()
 	GetMesh()->SetNotifyRigidBodyCollision(true);
 	GetMesh()->OnComponentHit.AddDynamic(this, &APlayerVehiclePawn::OnHit);
 	WheeledMovementComponent = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
+	CameraDefaultRotation = SpringArm->GetRelativeRotation();
 }
 
 void APlayerVehiclePawn::UpdateSpeed()
@@ -466,6 +469,11 @@ void APlayerVehiclePawn::CountDownCooldownTime()
 		GetVehicleMovementComponent()->ResetVehicle();
 		CooldownTimeRemaining = 0;
 	}
+}
+
+void APlayerVehiclePawn::RecenterCamera()
+{
+	SpringArm->SetRelativeRotation(CameraDefaultRotation);
 }
 
 void APlayerVehiclePawn::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

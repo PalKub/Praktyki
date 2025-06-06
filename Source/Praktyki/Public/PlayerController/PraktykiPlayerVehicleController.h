@@ -65,6 +65,9 @@ private:
 	TObjectPtr<UInputAction> PauseGameAction;
 
 	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UInputAction> RotateCameraAction;
+
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<APlayerVehiclePawn> PlayerVehicleClass;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -80,4 +83,5 @@ private:
 	void ChangeCamera();
 	void ResetCarPositionToTrack();
 	void PauseGame();
+	void RotateCamera(const FInputActionValue& InputActionValue);
 };

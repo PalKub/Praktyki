@@ -104,6 +104,7 @@ void APraktykiPlayerVehicleController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(ChangeCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::ChangeCamera);
 	EnhancedInputComponent->BindAction(ResetPositionAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::ResetCarPositionToTrack);
 	EnhancedInputComponent->BindAction(PauseGameAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::PauseGame);
+	EnhancedInputComponent->BindAction(RotateCameraAction, ETriggerEvent::Triggered, this, &APraktykiPlayerVehicleController::RotateCamera);
 }
 
 void APraktykiPlayerVehicleController::RaceTimeEnded()
@@ -191,5 +192,13 @@ void APraktykiPlayerVehicleController::PauseGame()
 	if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
 	{
 		HUD->OpenPauseGameWidget();
+	}
+}
+
+void APraktykiPlayerVehicleController::RotateCamera(const FInputActionValue& InputActionValue)
+{
+	if (APlayerVehiclePawn* PlayerVehicle = Cast<APlayerVehiclePawn>(GetPawn()))
+	{
+		PlayerVehicle->SetCameraRotation(InputActionValue.Get<float>());
 	}
 }

@@ -73,7 +73,7 @@ public:
 
 	FTimerHandle UpdateSpeedTimer;
 
-	void SetCameraRotation(const FVector2D NewRotation);
+	void SetCameraRotation(const float NewRotation);
 	void SetLivery(const ELiveryColor LiveryColor);
 	void SetCamera(const ECameraPosition CameraPosition) const;
 	void UpdateSteeringWheelPosition() const;
@@ -229,17 +229,22 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	int32 ResetToTrackCooldownTime = 3;
 
+	UPROPERTY(EditDefaultsOnly)
+	float CameraRecenterDelay = 1.f;
+	
 	float VehicleDamagePercentage = 0.f;
 	int32 VehicleSpeed = 0;
 	float LastHitTime = 0.f;
 	int32 CooldownTimeRemaining = 0.f;
 	FTimerHandle CooldownTimer;
+	FTimerHandle RecenterCameraTimer;
 	EDamageLevel CurrentDamageLevel = EDamageLevel::EDL_None;
 	TArray<TObjectPtr<UStaticMeshComponent>> LiveryMeshes;
 	TArray<TObjectPtr<UImpactPoint>> ImpactPoints;
 	TObjectPtr<UChaosWheeledVehicleMovementComponent> WheeledMovementComponent;
 	TObjectPtr<APraktykiPlayerVehicleController> PlayerVehicleController;
 	TObjectPtr<APraktykiPlayerState> PlayerState;
+	FRotator CameraDefaultRotation = FRotator();
 
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -250,4 +255,5 @@ private:
 	void ApplyCosmeticDamage(UImpactPoint* ImpactPoint, const float Percent);
 	void ApplyMechanicalDamage(const float Percent);
 	void CountDownCooldownTime();
+	void RecenterCamera();
 };
