@@ -54,8 +54,9 @@ void APraktykiPlayerState::StartFinishTriggered()
 			GameTimeAtLapStart = GetWorld()->GetTimeSeconds();
 
 			if (!CurrentDistanceAtLapTime || BestDistanceAtLapTime == CurrentDistanceAtLapTime) CurrentDistanceAtLapTime = NewObject<UCurveFloat>();
+			else CurrentDistanceAtLapTime->FloatCurve = FRichCurve();
 			if (!CurrentLapTimeAtDistance || BestLapTimeAtDistance == CurrentLapTimeAtDistance) CurrentLapTimeAtDistance = NewObject<UCurveFloat>();
-			else CurrentDistanceAtLapTime->ResetCurve();
+			else CurrentLapTimeAtDistance->FloatCurve = FRichCurve();
 			if (!bIsValidLap) bIsValidLap = true;
 			CurrentLapTransformAtLapTime = FTransformCurve();
 			PreviousDistance = 0.f;
@@ -132,18 +133,12 @@ void APraktykiPlayerState::ResetData()
 	LapStartDistanceAlongSpline = 0.f;
 	bShowGhost = true;
 	LapsInfoArray.Empty();
-	if (CurrentDistanceAtLapTime) CurrentDistanceAtLapTime->ResetCurve();
-	if (BestDistanceAtLapTime) BestDistanceAtLapTime->ResetCurve();
-	if (CurrentLapTimeAtDistance) CurrentLapTimeAtDistance->ResetCurve();
-	if (BestLapTimeAtDistance) BestLapTimeAtDistance->ResetCurve();
+	if (CurrentDistanceAtLapTime) CurrentDistanceAtLapTime->FloatCurve = FRichCurve();
+	if (BestDistanceAtLapTime) BestDistanceAtLapTime->FloatCurve = FRichCurve();
+	if (CurrentLapTimeAtDistance) CurrentLapTimeAtDistance->FloatCurve = FRichCurve();
+	if (BestLapTimeAtDistance) BestLapTimeAtDistance->FloatCurve = FRichCurve();
 	CurrentLapTransformAtLapTime = FTransformCurve();
 	BestLapTransformAtLapTime = FTransformCurve();
-	CurrentLapTransformAtLapTime.RotationCurve.FloatCurves->Reset();
-	CurrentLapTransformAtLapTime.TranslationCurve.FloatCurves->Reset();
-	CurrentLapTransformAtLapTime.ScaleCurve.FloatCurves->Reset();
-	BestLapTransformAtLapTime.RotationCurve.FloatCurves->Reset();
-	BestLapTransformAtLapTime.TranslationCurve.FloatCurves->Reset();
-	BestLapTransformAtLapTime.ScaleCurve.FloatCurves->Reset();
 	DamageMode = EDamageMode::EDM_NoDamage;
 }
 
@@ -173,7 +168,7 @@ void APraktykiPlayerState::StopRaceTimer()
 		BestLapSectorOne = CurrentSectorOneTime;
 		BestLapSectorTwo = CurrentSectorTwoTime;
 		BestLapSectorThree = CurrentSectorThreeTime;
-		if (BestDistanceAtLapTime) BestDistanceAtLapTime->FloatCurve.Reset();
+		if (BestDistanceAtLapTime) BestDistanceAtLapTime->FloatCurve = FRichCurve();
 		BestDistanceAtLapTime = CurrentDistanceAtLapTime;
 		BestLapTimeAtDistance = CurrentLapTimeAtDistance;
 		BestLapTransformAtLapTime = FTransformCurve();
