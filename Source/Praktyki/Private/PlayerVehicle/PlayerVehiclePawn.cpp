@@ -319,23 +319,7 @@ void APlayerVehiclePawn::Tick(float DeltaSeconds)
 			const FWheelStatus& WheelStatus = WheeledMovementComponent->GetWheelState(i);
 			if (WheelStatus.bInContact)
 			{
-				switch (UPhysicalMaterial::DetermineSurfaceType(WheelStatus.PhysMaterial.Get()))
-				{
-				case SurfaceType1:
-					WheeledMovementComponent->SetWheelFrictionMultiplier(i, 1.f);
-					break;
-
-				case SurfaceType2:
-					WheeledMovementComponent->SetWheelFrictionMultiplier(i, 0.5f);
-					break;
-
-				case SurfaceType3:
-					WheeledMovementComponent->SetWheelFrictionMultiplier(i, 0.3f);
-					break;
-
-				default:
-					break;
-				}
+				WheeledMovementComponent->SetWheelFrictionMultiplier(i, WheelStatus.PhysMaterial->Friction);
 			}
 		}
 	}
