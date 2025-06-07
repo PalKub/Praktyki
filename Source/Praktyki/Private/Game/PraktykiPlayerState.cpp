@@ -207,13 +207,14 @@ void APraktykiPlayerState::PopulateLapInfoData()
 	}
 
 	CurrentLapTransformAtLapTime.UpdateOrAddKey(GetPawn()->GetActorTransform(), LapTimeElapsed);
+	const bool bCarRotationCorrect = IsRotationAllignedWithTrack();
 
 	if (BestLapTime > 0.f)
 	{
 		const float Delta = LapTimeElapsed - BestDistanceAtLapTime->GetFloatValue(DistanceAlongTrackSpline);
-		OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, Delta, bIsValidLap);
+		OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, Delta, bIsValidLap, bCarRotationCorrect);
 	}
-	else OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, 0.f, bIsValidLap);
+	else OnLapTimeChangeDelegate.Broadcast(LapTimeElapsed, 0.f, bIsValidLap, bCarRotationCorrect);
 }
 
 void APraktykiPlayerState::ShowGhost()
@@ -241,4 +242,14 @@ void APraktykiPlayerState::TickDownTimeRemaining()
 			PlayerController->RaceTimeEnded();
 		}
 	}
+}
+
+bool APraktykiPlayerState::IsRotationAllignedWithTrack()
+{
+	const FRotator ClosestRotationOnTheTrackSpline = GameInstance->GetSpectatorCameraSpline()->FindRotationClosestToWorldLocation(GetPawn()->GetActorLocation(), ESplineCoordinateSpace::World);
+	bool bIsValidDirection;
+	const float RotationDifference = FMath::Abs(GetPawn()->GetActorRotation().Yaw - ClosestRotationOnTheTrackSpline.Yaw);
+	if (RotationDifference < 90 || RotationDifference > 270) bIsValidDirection = true;
+	else bIsValidDirection = false;
+	return bIsValidDirection;
 }

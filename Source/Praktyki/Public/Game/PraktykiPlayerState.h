@@ -42,7 +42,7 @@ struct FLapInfo
 	float SectorThreeTime = 0.f;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLapTimeChangeSignature, float, LapTimeElapsed, float, Delta, bool, bIsValidLap);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnLapTimeChangeSignature, float, LapTimeElapsed, float, Delta, bool, bIsValidLap, bool, CorrectRotation);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnSectorCompletedSignature, ESectorNumber, SectorNumber, float, SectorTime, bool, bIsPurple, bool, bIsValidLap);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLapCompletedSignature, FLapInfo, LapInfo, bool, bIsBestLap, bool, bIsValidLap);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeRemainingChangedSignature, int32, TimeRemaining);
@@ -149,4 +149,5 @@ private:
 	void PopulateLapInfoData();
 	void ShowGhost();
 	void TickDownTimeRemaining();
+	bool IsRotationAllignedWithTrack();
 };
