@@ -52,7 +52,7 @@ void APraktykiPlayerState::StartFinishTriggered()
 			bSectorTwoTriggered = false;
 			bSectorThreeTriggered = false;
 			GameTimeAtLapStart = GetWorld()->GetTimeSeconds();
-
+			
 			if (!CurrentDistanceAtLapTime || BestDistanceAtLapTime == CurrentDistanceAtLapTime) CurrentDistanceAtLapTime = NewObject<UCurveFloat>();
 			else CurrentDistanceAtLapTime->FloatCurve = FRichCurve();
 			if (!CurrentLapTimeAtDistance || BestLapTimeAtDistance == CurrentLapTimeAtDistance) CurrentLapTimeAtDistance = NewObject<UCurveFloat>();
@@ -82,7 +82,7 @@ void APraktykiPlayerState::SectorTwoTriggered()
 		bStartFinishTriggered = false;
 		bSectorTwoTriggered = true;
 		CurrentSectorOneTime = LapTimeElapsed;
-		if (BestSectorOneTime == 0.f || CurrentSectorOneTime < BestSectorOneTime)
+		if ((BestSectorOneTime == 0.f || CurrentSectorOneTime < BestSectorOneTime) && bIsValidLap)
 		{
 			BestSectorOneTime = CurrentSectorOneTime;
 			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_One, CurrentSectorOneTime, true, bIsValidLap);
@@ -98,7 +98,7 @@ void APraktykiPlayerState::SectorThreeTriggered()
 		bSectorTwoTriggered = false;
 		bSectorThreeTriggered = true;
 		CurrentSectorTwoTime = LapTimeElapsed - CurrentSectorOneTime;
-		if (BestSectorTwoTime == 0.f || CurrentSectorTwoTime < BestSectorTwoTime)
+		if ((BestSectorTwoTime == 0.f || CurrentSectorTwoTime < BestSectorTwoTime) && bIsValidLap)
 		{
 			BestSectorTwoTime = CurrentSectorTwoTime;
 			OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Two, CurrentSectorTwoTime, true, bIsValidLap);
@@ -175,7 +175,7 @@ void APraktykiPlayerState::StopRaceTimer()
 		BestLapTransformAtLapTime = CurrentLapTransformAtLapTime;
 	}
 	
-	if (BestSectorThreeTime == 0.f || CurrentSectorThreeTime < BestSectorThreeTime)
+	if ((BestSectorThreeTime == 0.f || CurrentSectorThreeTime < BestSectorThreeTime) && bIsValidLap)
 	{
 		BestSectorThreeTime = CurrentSectorThreeTime;
 		OnSectorCompletedDelegate.Broadcast(ESectorNumber::ESN_Three, CurrentSectorThreeTime, true, bIsValidLap);
