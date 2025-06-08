@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
-#include "PlayerController/PraktykiPlayerVehicleController.h"
+#include "Player/PraktykiPlayerVehicleController.h"
 #include "PraktykiPlayerState.generated.h"
 
 enum class EDamageMode : uint8;

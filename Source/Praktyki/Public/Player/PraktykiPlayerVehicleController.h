@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
-#include "PlayerVehicle/PlayerVehiclePawn.h"
+#include "Player/PlayerVehiclePawn.h"
 #include "PraktykiPlayerVehicleController.generated.h"
 
 enum class EDamageMode : uint8;

@@ -1,8 +1,7 @@
 // Copyright 2025 Teyon. All Rights Reserved.
 
 
-#include "PraktykiSpectatorSpline.h"
-
+#include "Actors/PraktykiSpectatorSpline.h"
 #include "Components/SplineComponent.h"
 #include "Game/PraktykiGameInstance.h"
 

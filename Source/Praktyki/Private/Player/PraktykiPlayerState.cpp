@@ -1,12 +1,12 @@
 // Copyright 2025 Teyon. All Rights Reserved.
 
 
-#include "Game/PraktykiPlayerState.h"
+#include "Player/PraktykiPlayerState.h"
 
 #include "Actors/GhostActor.h"
 #include "Components/SplineComponent.h"
 #include "Game/PraktykiGameInstance.h"
-#include "PlayerController/PraktykiPlayerVehicleController.h"
+#include "Player/PraktykiPlayerVehicleController.h"
 
 FLapInfo APraktykiPlayerState::GetBestLapInfo()
 {

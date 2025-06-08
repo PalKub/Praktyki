@@ -1,7 +1,7 @@
 // Copyright 2025 Teyon. All Rights Reserved.
 
 
-#include "PlayerVehicle/PlayerVehiclePawn.h"
+#include "Player/PlayerVehiclePawn.h"
 
 #include "ChaosVehicleMovementComponent.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
@@ -9,9 +9,8 @@
 #include "Components/ImpactPoint.h"
 #include "Components/SplineComponent.h"
 #include "Game/PraktykiGameInstance.h"
-#include "Game/PraktykiPlayerState.h"
+#include "Player/PraktykiPlayerState.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "PlayerController/PraktykiPlayerVehicleController.h"
 
 APlayerVehiclePawn::APlayerVehiclePawn()
 {

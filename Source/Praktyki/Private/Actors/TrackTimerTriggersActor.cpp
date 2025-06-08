@@ -1,11 +1,11 @@
 // Copyright 2025 Teyon. All Rights Reserved.
 
 
-#include "TrackTimerTriggersActor.h"
+#include "Actors/TrackTimerTriggersActor.h"
 
 #include "Components/BoxComponent.h"
 #include "Game/PraktykiGameInstance.h"
-#include "Game/PraktykiPlayerState.h"
+#include "Player/PraktykiPlayerState.h"
 
 ATrackTimerTriggersActor::ATrackTimerTriggersActor()
 {

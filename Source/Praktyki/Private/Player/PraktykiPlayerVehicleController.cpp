@@ -1,19 +1,18 @@
 // Copyright 2025 Teyon. All Rights Reserved.
 
 
-#include "PlayerController/PraktykiPlayerVehicleController.h"
-
+#include "Player/PraktykiPlayerVehicleController.h"
 #include "ChaosVehicleMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "PraktykiSpectatorCamera.h"
+#include "Actors/PraktykiSpectatorCamera.h"
 #include "Actors/GhostActor.h"
 #include "Game/PraktykiMainMenuHUD.h"
-#include "Game/PraktykiPlayerState.h"
+#include "Player/PraktykiPlayerState.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
-#include "PlayerVehicle/PlayerVehiclePawn.h"
+#include "Player/PlayerVehiclePawn.h"
 
 TObjectPtr<AGhostActor> APraktykiPlayerVehicleController::SpawnGhost(const FVector& Location,
 	const FRotator& Rotation) const

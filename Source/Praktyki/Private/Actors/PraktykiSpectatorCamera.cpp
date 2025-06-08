@@ -1,8 +1,7 @@
 // Copyright 2025 Teyon. All Rights Reserved.
 
 
-#include "PraktykiSpectatorCamera.h"
-
+#include "Actors/PraktykiSpectatorCamera.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SplineComponent.h"
 #include "Game/PraktykiGameInstance.h"
