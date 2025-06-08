@@ -7,42 +7,52 @@
 
 void APraktykiMainMenuHUD::OpenRacingHUDWidget()
 {
-	if (MainMenuWidget) MainMenuWidget->RemoveFromParent();
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), RacingHUDClass);
-	Widget->AddToViewport();
-	RacingHUDWidget = Widget;
+	if (RacingHUDClass)
+	{
+		CloseAllWidgets();
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), RacingHUDClass);
+		Widget->AddToViewport();
+		RacingHUDWidget = Widget;
+		OpenWidgets.Add(Widget);
+	}
 }
 
 void APraktykiMainMenuHUD::OpenRaceSummaryWidget()
 {
-	if (RacingHUDWidget) RacingHUDWidget->RemoveFromParent();
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), RaceSummaryWidgetClass);
-	Widget->AddToViewport();
-	RaceSummaryWidget = Widget;
-	FInputModeUIOnly InputMode;
-	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	GetOwningPlayerController()->SetInputMode(InputMode);
-	GetOwningPlayerController()->bShowMouseCursor = true;
+	if (RaceSummaryWidgetClass)
+	{
+		CloseAllWidgets();
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), RaceSummaryWidgetClass);
+		Widget->AddToViewport();
+		RaceSummaryWidget = Widget;
+		FInputModeUIOnly InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		GetOwningPlayerController()->SetInputMode(InputMode);
+		GetOwningPlayerController()->bShowMouseCursor = true;
+		OpenWidgets.Add(Widget);
+	}
 }
 
 void APraktykiMainMenuHUD::OpenPauseGameWidget()
 {
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), PauseGameWidgetClass);
-	Widget->AddToViewport();
-	RaceSummaryWidget = Widget;
-	FInputModeUIOnly InputMode;
-	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	GetOwningPlayerController()->SetInputMode(InputMode);
-	GetOwningPlayerController()->bShowMouseCursor = true;
+	if (PauseGameWidgetClass)
+	{
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), PauseGameWidgetClass);
+		Widget->AddToViewport();
+		PauseGameWidget = Widget;
+		FInputModeUIOnly InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		GetOwningPlayerController()->SetInputMode(InputMode);
+		GetOwningPlayerController()->bShowMouseCursor = true;
+		OpenWidgets.Add(Widget);
+	}
 }
 
 void APraktykiMainMenuHUD::OpenMainMenuWidget()
 {
 	if (MainMenuWidgetClass)
 	{
-		if (RaceSummaryWidget) RaceSummaryWidget->RemoveFromParent();
-		if (ControlsWidget) ControlsWidget->RemoveFromParent();
-		if (RacingHUDWidget) RacingHUDWidget->RemoveFromParent();
+		CloseAllWidgets();
 		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), MainMenuWidgetClass);
 		Widget->AddToViewport();
 		FInputModeUIOnly InputMode;
@@ -50,6 +60,7 @@ void APraktykiMainMenuHUD::OpenMainMenuWidget()
 		GetOwningPlayerController()->SetInputMode(InputMode);
 		GetOwningPlayerController()->bShowMouseCursor = true;
 		MainMenuWidget = Widget;
+		OpenWidgets.Add(Widget);
 	}
 }
 
@@ -57,7 +68,7 @@ void APraktykiMainMenuHUD::OpenControlsWidget()
 {
 	if (ControlWidgetClass)
 	{
-		if (MainMenuWidget) MainMenuWidget->RemoveFromParent();
+		if (IsValid(MainMenuWidget)) MainMenuWidget->RemoveFromParent();
 		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), MainMenuWidgetClass);
 		Widget->AddToViewport();
 		FInputModeUIOnly InputMode;
@@ -65,6 +76,7 @@ void APraktykiMainMenuHUD::OpenControlsWidget()
 		GetOwningPlayerController()->SetInputMode(InputMode);
 		GetOwningPlayerController()->bShowMouseCursor = true;
 		ControlsWidget = Widget;
+		OpenWidgets.Add(Widget);
 	}
 }
 
@@ -82,4 +94,13 @@ void APraktykiMainMenuHUD::BeginPlay()
 		GetOwningPlayerController()->bShowMouseCursor = true;
 		MainMenuWidget = Widget;
 	}
+}
+
+void APraktykiMainMenuHUD::CloseAllWidgets()
+{
+	for (UUserWidget* Widget : OpenWidgets)
+	{
+		if (IsValid(Widget)) Widget->RemoveFromParent();
+	}
+	OpenWidgets.Empty();
 }

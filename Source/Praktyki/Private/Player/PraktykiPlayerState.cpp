@@ -140,6 +140,7 @@ void APraktykiPlayerState::ResetData()
 	CurrentLapTransformAtLapTime = FTransformCurve();
 	BestLapTransformAtLapTime = FTransformCurve();
 	DamageMode = EDamageMode::EDM_NoDamage;
+	ClearRaceTimer();
 }
 
 void APraktykiPlayerState::ClearRaceTimer()

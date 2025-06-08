@@ -34,6 +34,9 @@ protected:
 	void StartPracticeMode();
 
 	UFUNCTION(BlueprintCallable)
+	void RestartRaceWIthCurrentParameters();
+
+	UFUNCTION(BlueprintCallable)
 	void QuitToMainMenu();
 
 	UFUNCTION(BlueprintCallable)
@@ -90,4 +93,12 @@ private:
 	void PauseGame();
 	void RotateCamera(const FInputActionValue& InputActionValue);
 	/** end Input bound functions */
+
+	/** Current race parameters */
+	int32 CurrentTimeLimit = 0;
+	bool CurrentShouldShowGhost = false;
+	ELiveryColor CurrentLiveryColor = ELiveryColor::ELC_Default;
+	EDamageMode CurrentDamageMode = EDamageMode::EDM_NoDamage;
+	/** end Current race parameters */
+	
 };

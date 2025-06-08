@@ -49,4 +49,7 @@ private:
 	TObjectPtr<UUserWidget> RaceSummaryWidget;
 	TObjectPtr<UUserWidget> ControlsWidget;
 	TObjectPtr<UUserWidget> PauseGameWidget;
+	TArray<UUserWidget*> OpenWidgets;
+
+	void CloseAllWidgets();
 };

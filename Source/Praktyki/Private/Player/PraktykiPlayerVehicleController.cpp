@@ -26,6 +26,11 @@ void APraktykiPlayerVehicleController::StartPracticeMode()
 	bInRacingMode = false;
 }
 
+void APraktykiPlayerVehicleController::RestartRaceWIthCurrentParameters()
+{
+	StartRaceMode(CurrentTimeLimit, CurrentShouldShowGhost, CurrentLiveryColor, CurrentDamageMode);
+}
+
 void APraktykiPlayerVehicleController::QuitToMainMenu()
 {
 	if (!bInRacingMode)
@@ -69,6 +74,7 @@ void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShow
 
 		if (APraktykiPlayerState* PraktykiPlayerState = Cast<APraktykiPlayerState>(PlayerState))
 		{
+			SetThrottleMultiplier(1.0f);
 			PraktykiPlayerState->ResetData();
 			PraktykiPlayerState->SetTimeLimit(TimeLimit);
 			PraktykiPlayerState->SetDamageMode(DamageMode);
@@ -83,6 +89,10 @@ void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShow
 		}
 
 		bInRacingMode = true;
+		CurrentTimeLimit = TimeLimit;
+		CurrentShouldShowGhost = bShowGhost;
+		CurrentLiveryColor = LiveryColor;
+		CurrentDamageMode = DamageMode;
 	}
 }
 
@@ -117,6 +127,10 @@ void APraktykiPlayerVehicleController::RaceTimeEnded()
 {
 	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
 	{
+		if (APraktykiPlayerState* PS = Cast<APraktykiPlayerState>(GetPlayerState<APraktykiPlayerState>()))
+		{
+			PS->ResetData();
+		}
 		if (APawn* CurrentPawn = GetPawn())
 		{
 			UnPossess();

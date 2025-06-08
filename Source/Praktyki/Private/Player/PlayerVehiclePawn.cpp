@@ -313,11 +313,6 @@ void APlayerVehiclePawn::UnPossessed()
 	Super::UnPossessed();
 
 	if (GetWorldTimerManager().IsTimerActive(UpdateSpeedTimer)) GetWorldTimerManager().ClearTimer(UpdateSpeedTimer);
-
-	if (APraktykiPlayerState* PS = Cast<APraktykiPlayerState>(GetPlayerState()))
-	{
-		PS->ClearRaceTimer();
-	}
 }
 
 void APlayerVehiclePawn::Tick(float DeltaSeconds)
