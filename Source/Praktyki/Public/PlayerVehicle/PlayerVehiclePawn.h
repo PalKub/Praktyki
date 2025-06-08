@@ -74,6 +74,7 @@ public:
 	FOnCooldownTimeChangedSignature OnCooldownTimeChangedDelegate;
 
 	FTimerHandle UpdateSpeedTimer;
+	FTimerHandle EndSessionTimer;
 	
 	void SetCameraRotation(const float NewRotation);
 	void SetLivery(const ELiveryColor LiveryColor);
@@ -230,6 +231,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "General Settings")
 	int32 ResetToTrackCooldownTime = 3;
 
+	UPROPERTY(EditDefaultsOnly, Category = "General Settings")
+	float TimeTillSessionEndAfterCarTotalled = 5.f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Livery")
 	FLinearColor LiveryBlueColor;
 
@@ -247,6 +251,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Camera Settings")
 	float CameraAutoRecenterTime = 0.5f;
+	
 	/** end Vehicle Settings */
 	
 	UPROPERTY()
@@ -286,4 +291,5 @@ private:
 	void ApplyMechanicalDamage(const float Percent);
 	void CountDownCooldownTime();
 	void RecenterCamera();
+	void EndSession() const;
 };

@@ -294,6 +294,14 @@ void APlayerVehiclePawn::TeleportToTrack()
 	}
 }
 
+void APlayerVehiclePawn::EndSession() const
+{
+	if (APraktykiPlayerVehicleController* PC = Cast<APraktykiPlayerVehicleController>(GetController()))
+	{
+		PC->RaceTimeEnded();
+	}
+}
+
 void APlayerVehiclePawn::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -306,6 +314,11 @@ void APlayerVehiclePawn::UnPossessed()
 	Super::UnPossessed();
 
 	if (GetWorldTimerManager().IsTimerActive(UpdateSpeedTimer)) GetWorldTimerManager().ClearTimer(UpdateSpeedTimer);
+
+	if (APraktykiPlayerState* PS = Cast<APraktykiPlayerState>(GetPlayerState()))
+	{
+		PS->ClearRaceTimer();
+	}
 }
 
 void APlayerVehiclePawn::Tick(float DeltaSeconds)
@@ -424,6 +437,7 @@ void APlayerVehiclePawn::ApplyMechanicalDamage(const float Percent)
 		{
 			PlayerVehicleController->SetThrottleMultiplier(0.f);
 			DamageLevel = EDamageLevel::EDL_Broken;
+			GetWorldTimerManager().SetTimer(EndSessionTimer, this, &APlayerVehiclePawn::EndSession, TimeTillSessionEndAfterCarTotalled);
 		}
 		else if (VehicleDamagePercentage >= 0.75f)
 		{

@@ -21,7 +21,6 @@ void APraktykiMainMenuHUD::OpenRaceSummaryWidget()
 	RaceSummaryWidget = Widget;
 	FInputModeUIOnly InputMode;
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	InputMode.SetWidgetToFocus(Widget->TakeWidget());
 	GetOwningPlayerController()->SetInputMode(InputMode);
 	GetOwningPlayerController()->bShowMouseCursor = true;
 }
@@ -33,7 +32,6 @@ void APraktykiMainMenuHUD::OpenPauseGameWidget()
 	RaceSummaryWidget = Widget;
 	FInputModeUIOnly InputMode;
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	InputMode.SetWidgetToFocus(Widget->TakeWidget());
 	GetOwningPlayerController()->SetInputMode(InputMode);
 	GetOwningPlayerController()->bShowMouseCursor = true;
 }
@@ -49,7 +47,6 @@ void APraktykiMainMenuHUD::OpenMainMenuWidget()
 		Widget->AddToViewport();
 		FInputModeUIOnly InputMode;
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputMode.SetWidgetToFocus(Widget->TakeWidget());
 		GetOwningPlayerController()->SetInputMode(InputMode);
 		GetOwningPlayerController()->bShowMouseCursor = true;
 		MainMenuWidget = Widget;
@@ -65,7 +62,6 @@ void APraktykiMainMenuHUD::OpenControlsWidget()
 		Widget->AddToViewport();
 		FInputModeUIOnly InputMode;
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputMode.SetWidgetToFocus(Widget->TakeWidget());
 		GetOwningPlayerController()->SetInputMode(InputMode);
 		GetOwningPlayerController()->bShowMouseCursor = true;
 		ControlsWidget = Widget;
@@ -82,7 +78,6 @@ void APraktykiMainMenuHUD::BeginPlay()
 		Widget->AddToViewport();
 		FInputModeUIOnly InputMode;
 		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputMode.SetWidgetToFocus(Widget->TakeWidget());
 		GetOwningPlayerController()->SetInputMode(InputMode);
 		GetOwningPlayerController()->bShowMouseCursor = true;
 		MainMenuWidget = Widget;

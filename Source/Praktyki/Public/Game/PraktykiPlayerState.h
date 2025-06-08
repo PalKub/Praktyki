@@ -91,6 +91,7 @@ public:
 	void ResetData();
 	void InvalidateLap() { bIsValidLap = false; }
 	void SetDamageMode(const EDamageMode NewDamageMode) { DamageMode = NewDamageMode; }
+	void ClearRaceTimer();
 
 private:
 	UPROPERTY(EditDefaultsOnly)

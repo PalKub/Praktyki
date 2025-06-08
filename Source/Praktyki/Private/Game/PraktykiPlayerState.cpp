@@ -142,6 +142,11 @@ void APraktykiPlayerState::ResetData()
 	DamageMode = EDamageMode::EDM_NoDamage;
 }
 
+void APraktykiPlayerState::ClearRaceTimer()
+{
+	if (GetWorldTimerManager().IsTimerActive(RaceTimer)) GetWorldTimerManager().ClearTimer(RaceTimer);
+}
+
 void APraktykiPlayerState::StartRaceTimer()
 {
 	PopulateLapInfoData();

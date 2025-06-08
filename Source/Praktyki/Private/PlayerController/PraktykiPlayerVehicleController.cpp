@@ -24,25 +24,30 @@ TObjectPtr<AGhostActor> APraktykiPlayerVehicleController::SpawnGhost(const FVect
 void APraktykiPlayerVehicleController::StartPracticeMode()
 {
 	StartRaceMode(0, false, ELiveryColor::ELC_Default);
+	bInRacingMode = false;
 }
 
 void APraktykiPlayerVehicleController::QuitToMainMenu()
 {
-	if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
+	if (!bInRacingMode)
 	{
-		if (APawn* CurrentPawn = GetPawn())
+		if (AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass()))
 		{
-			UnPossess();
-			CurrentPawn->Destroy();
-		}
-		APraktykiSpectatorCamera* NewPawn = GetWorld()->SpawnActor<APraktykiSpectatorCamera>(GetWorld()->GetAuthGameMode()->GetDefaultPawnClassForController(this), PlayerStart->GetActorTransform());
-		Possess(NewPawn);
+			if (APawn* CurrentPawn = GetPawn())
+			{
+				UnPossess();
+				CurrentPawn->Destroy();
+			}
+			APraktykiSpectatorCamera* NewPawn = GetWorld()->SpawnActor<APraktykiSpectatorCamera>(GetWorld()->GetAuthGameMode()->GetDefaultPawnClassForController(this), PlayerStart->GetActorTransform());
+			Possess(NewPawn);
 		
-		if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
-		{
-			HUD->OpenMainMenuWidget();
+			if (APraktykiMainMenuHUD* HUD = Cast<APraktykiMainMenuHUD>(GetHUD()))
+			{
+				HUD->OpenMainMenuWidget();
+			}
 		}
 	}
+	else RaceTimeEnded();
 }
 
 void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShowGhost, ELiveryColor LiveryColor, EDamageMode DamageMode)
@@ -77,6 +82,8 @@ void APraktykiPlayerVehicleController::StartRaceMode(int32 TimeLimit, bool bShow
 		{
 			HUD->OpenRacingHUDWidget();
 		}
+
+		bInRacingMode = true;
 	}
 }
 

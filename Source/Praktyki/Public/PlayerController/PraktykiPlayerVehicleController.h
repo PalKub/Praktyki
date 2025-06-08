@@ -78,6 +78,7 @@ private:
 
 	bool bCameraSetToInside = false;
 	float ThrottleMultiplier = 1.f;
+	bool bInRacingMode = false;
 
 	/** Input bound functions */
 	void Accelerate(const FInputActionValue& InputActionValue);
